@@ -1,0 +1,6 @@
+{
+    "watch": ["src", "controllers", "models", "DAL"],
+    "ext": "js,json",
+    "ignore": ["node_modules", "logs", "*.test.js", "*.md", ".*"]
+  }
+  
