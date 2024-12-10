@@ -16,6 +16,8 @@ const io = socketIo(server);
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+
 
 // **CORS Configuration**
 const corsOptions = {

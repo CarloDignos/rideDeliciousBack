@@ -10,11 +10,8 @@ const productSchema = new mongoose.Schema(
     price: { type: Number, required: [true, "Product price is required"] },
     markUp: { type: Number, required: [true, "Markup percentage is required"] },
     sellingPrice: { type: Number, required: true },
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: [true, "Category ID is required"],
-    },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    image: { type: String, required: false }, // Add this line
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

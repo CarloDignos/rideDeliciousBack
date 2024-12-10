@@ -4,6 +4,7 @@ const categorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
     description: { type: String, required: false },
+    image: { type: String, required: false },
     address: {
       street: { type: String, required: true },
       city: { type: String, required: true },

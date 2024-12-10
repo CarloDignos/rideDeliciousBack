@@ -1,9 +1,13 @@
-const productDAL = require("../DAL/product.dal");
+const mongoose = require("mongoose"); // Add this line if it's missing
 const Product = require("../models/product.model");
+const productDAL = require("../DAL/product.dal");
+
 // Create a new product with category, markup, and selling price
 exports.createProduct = async (req, res) => {
   try {
     const { name, description, price, markUp, category, createdBy } = req.body;
+    console.log(req.file); // Debugging: Check if the file is uploaded
+    const image = req.file ? `uploads/${req.file.filename}` : null;
 
     // Validate input fields
     if (!name || !description || !price || !markUp || !category || !createdBy) {
@@ -16,6 +20,7 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid price or markUp" });
     }
 
+    // Prepare product data
     const productData = {
       name,
       description,
@@ -24,7 +29,10 @@ exports.createProduct = async (req, res) => {
       sellingPrice,
       category,
       createdBy,
+      image, // Save image path in correct format
     };
+
+    // Create and save product
     const product = await Product.create(productData);
 
     res.status(201).json({ message: "Product created successfully", product });
@@ -60,10 +68,17 @@ exports.getProductDetails = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 // Get all products
 exports.getProducts = async (req, res) => {
   try {
-    const products = await productDAL.getAllProducts();
+    const products = await Product.find()
+      .populate({
+        path: "category",
+        select: "name address image",
+      }) // Include the `address` and `name` fields explicitly in the category
+      .populate("createdBy", "_id username userType"); // Populate `createdBy` details
+
     res.status(200).json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -74,9 +89,24 @@ exports.getProducts = async (req, res) => {
 exports.getProductsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
-    const products = await productDAL.getProductsByCategory(category);
+
+    // Validate category ID
+    if (!mongoose.Types.ObjectId.isValid(category)) {
+      return res.status(400).json({ error: "Invalid category ID format" });
+    }
+
+    // Fetch products with the specified category ID
+    const products = await Product.find({ category })
+      .populate("category", "name address image")
+      .populate("createdBy", "username userType");
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: "No products found for this category" });
+    }
+
     res.status(200).json(products);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error fetching products by category:", err);
+    res.status(500).json({ error: "An error occurred while fetching products" });
   }
 };

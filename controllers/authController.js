@@ -81,8 +81,8 @@ const login = async (req, res) => {
         const token = jwt.sign(
             { id: user._id, userType: user.userType },
             process.env.JWT_SECRET,
-            { expiresIn: '1d' } // Add an expiration time for security
-        );
+            { expiresIn: '24h' }
+        );        
 
         // Store the token in the user's document (if needed)
         await userDal.updateUser(user._id, { authToken: token });
@@ -98,6 +98,7 @@ const login = async (req, res) => {
                 username: user.username, // Include other user details as needed
                 picture: user.picture, // Include the user's profile picture
                 address: address || {}, // Include the full address object if available
+                status: 'Online',
             },
         });
         console.log(user);

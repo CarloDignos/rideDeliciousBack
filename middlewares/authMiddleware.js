@@ -6,7 +6,7 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Authentication failed: No token provided' });
+        return res.status(401).json({ message: 'No token provided' });
     }
 
     try {
@@ -14,24 +14,26 @@ const authenticateToken = async (req, res, next) => {
         const user = await userDal.getUserById(decoded.id);
 
         if (!user || user.authToken !== token) {
-            return res.status(401).json({ message: 'Authentication failed: Invalid or expired token' });
+            return res.status(401).json({ message: 'Invalid or expired token' });
         }
 
-        req.user = decoded; // Attach the decoded user to the request
-        next(); // Proceed to the next middleware or route handler
+        req.user = decoded; // Attach user to request
+        next();
     } catch (err) {
         return res.status(403).json({ message: 'Invalid token', error: err.message });
     }
 };
 
-const authorize = (role) => (req, res, next) => {
-    console.log("User Info:", req.user);
-    if (req.user && req.user.role === role) {
-      return next();
-    }
-    return res.status(403).json({ message: "Access denied: Unauthorized role" });
-  };
-  
+const authorize = (role) => {
+    return (req, res, next) => {
+        console.log("User Info:", req.user);
+        if (req.user && req.user.userType === role) {
+            return next();
+        }
+        return res.status(403).json({ message: "Access denied: Unauthorized role" });
+    };
+};
+
 
 module.exports = { authenticateToken, authorize };
 
