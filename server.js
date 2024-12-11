@@ -13,6 +13,8 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+const cartRoutes = require('./routes/cart.routes');
+const menuOptionRoutes = require('./routes/menuOption.routes');
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -46,6 +48,8 @@ app.use('/api/v1', userRoutes); // Mount the user routes
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use('/api/v1/cart', cartRoutes);
+app.use('/api/v1/menu-options', menuOptionRoutes);
 
 app.get('/', (req, res) => {
   res.send('Your are connected into backend.')

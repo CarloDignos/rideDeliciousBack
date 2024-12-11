@@ -9,18 +9,20 @@ exports.createOrder = async (orderData) => {
 // Get an order by ID
 exports.getOrderById = async (orderId) => {
   return await Order.findById(orderId)
-    .populate("customer", "username")
-    .populate("store", "name")
-    .populate("products.product", "name price");
+    .populate('customer', 'username')
+    .populate('store', 'name')
+    .populate('products.product', 'name price')
+    .populate('products.menuOptions', 'optionName priceModifier'); // Include menu options
 };
 
-// Get all orders
 exports.getAllOrders = async () => {
   return await Order.find()
-    .populate("customer", "username")
-    .populate("store", "name")
-    .populate("products.product", "name price");
+    .populate('customer', 'username')
+    .populate('store', 'name')
+    .populate('products.product', 'name price')
+    .populate('products.menuOptions', 'optionName priceModifier'); // Include menu options
 };
+
 
 // Update an order
 exports.updateOrder = async (orderId, updateData) => {
