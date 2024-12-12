@@ -6,11 +6,19 @@ const getCartByUserId = async (userId) => {
   if (!cart) return null;
 
   const cartItems = await CartItem.find({ cartId: cart._id })
-    .populate('productId', 'name price')
+    .populate({
+      path: 'productId',
+      select: '_id name price image category',
+      populate: {
+        path: 'category',
+        select: 'name address.name address.latitude address.longitude', // Include address details
+      },
+    })
     .populate('menuOptions', 'optionName priceModifier'); // Include menu options
 
   return { ...cart.toObject(), cartItems };
 };
+
 
 
 const createCart = async (userId) => {

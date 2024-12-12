@@ -1,4 +1,6 @@
 const cartDal = require('../DAL/cartDal');
+const CartItem = require('../models/cartItem.model');
+const Cart = require('../models/cart.model');
 
 const getCart = async (req, res) => {
   try {
@@ -46,24 +48,36 @@ const addItemToCart = async (req, res) => {
 const removeItemFromCart = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { productId } = req.params;
+    const { cartItemId } = req.params; // Ensure cartItemId is passed correctly
 
     const cart = await cartDal.getCartByUserId(userId);
     if (!cart) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    await cartDal.removeCartItem(cart._id, productId);
+    // Delete the cart item by cartItemId
+    const deletedItem = await CartItem.findByIdAndDelete(cartItemId);
+    if (!deletedItem) {
+      return res.status(404).json({ message: 'Item not found in cart' });
+    }
+
+    // Update the cart to remove the reference
+    await Cart.updateOne(
+      { _id: cart._id },
+      { $pull: { cartItems: cartItemId } },
+    );
+
     res.status(200).json({ message: 'Item removed from cart' });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: 'Failed to remove item from cart',
-        error: error.message,
-      });
+    console.error('Error in removeItemFromCart:', error);
+    res.status(500).json({
+      message: 'Failed to remove item from cart',
+      error: error.message,
+    });
   }
 };
+
+
 
 const clearCart = async (req, res) => {
   try {
