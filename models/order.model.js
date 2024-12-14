@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema(
     },
     store: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category', // Assuming 'Category' represents the store
+      ref: 'Category',
       required: true,
     },
     products: [
@@ -23,12 +23,17 @@ const orderSchema = new mongoose.Schema(
         menuOptions: [
           {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'MenuOption', // Links to specific menu options
+            ref: 'MenuOption',
           },
         ],
       },
     ],
     totalAmount: { type: Number, required: true },
+    paymentMethod: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PaymentMethod',
+      required: true,
+    },
     deliveryDetails: {
       status: {
         type: String,
@@ -44,8 +49,8 @@ const orderSchema = new mongoose.Schema(
           latitude: { type: Number, required: true },
           longitude: { type: Number, required: true },
         },
-        distance: { type: Number, required: false }, // In kilometers
-        estimatedTime: { type: Number, required: false }, // In minutes
+        distance: { type: Number },
+        estimatedTime: { type: Number },
       },
     },
     createdBy: {
@@ -64,5 +69,6 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
 
 module.exports = mongoose.model('Order', orderSchema);

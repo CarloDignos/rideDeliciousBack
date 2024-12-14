@@ -3,10 +3,12 @@ const orderDAL = require('../DAL/order.dal');
 const User = require('../models/User');
 const Category = require('../models/category.model');
 const Product = require('../models/product.model');
+const PaymentMethod = require('../models/paymentMethod.model');
 const menuOptionDAL = require('../DAL/menuOption.dal');
 
 exports.createOrder = async (req, res) => {
-  const { customer, store, products, createdBy } = req.body;
+  const { customer, store, products, createdBy, paymentMethodId } = req.body;
+console.log('Request received:', JSON.stringify(req.body, null, 2));
 
   try {
     // Validate products
@@ -14,6 +16,13 @@ exports.createOrder = async (req, res) => {
       return res
         .status(400)
         .json({ message: 'Products must be a non-empty array.' });
+    }
+
+    const paymentMethod = await PaymentMethod.findById(paymentMethodId);
+    if (!paymentMethod) {
+      return res
+        .status(404)
+        .json({ message: 'Selected payment method not found' });
     }
 
     // Fetch product and menu option details for price calculation
@@ -136,6 +145,7 @@ exports.createOrder = async (req, res) => {
           estimatedTime,
         },
       },
+      paymentMethod: paymentMethod._id,
       createdBy,
     };
 
