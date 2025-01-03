@@ -6,6 +6,27 @@ exports.createOrder = async (orderData) => {
   return await order.save();
 };
 
+// Get all pending orders
+exports.getPendingOrders = async () => {
+  return await Order.find({ 'deliveryDetails.status': 'pending' })
+    .populate('customer', 'username')
+    .populate('store', 'name')
+    .populate('products.product', 'name price')
+    .populate('products.menuOptions', 'optionName priceModifier');
+};
+
+exports.getPendingOrders = async (req, res) => {
+  try {
+    const pendingOrders = await orderDAL.getPendingOrders();
+    if (!pendingOrders || pendingOrders.length === 0) {
+      return res.status(404).json({ message: 'No pending orders found' });
+    }
+    res.status(200).json(pendingOrders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Get an order by ID
 exports.getOrderById = async (orderId) => {
   return await Order.findById(orderId)
@@ -23,6 +44,15 @@ exports.getAllOrders = async () => {
     .populate('products.menuOptions', 'optionName priceModifier'); // Include menu options
 };
 
+// Get all orders by a specific user ID
+exports.getOrdersByUserId = async (userId) => {
+  return await Order.find({ customer: userId })
+    .populate('customer', 'username')
+    .populate('store', 'name')
+    .populate('products.product', 'name price image')
+    .populate('paymentMethod', 'method') // Ensure this is populated correctly
+    .populate('products.menuOptions', 'optionName priceModifier');
+};
 
 // Update an order
 exports.updateOrder = async (orderId, updateData) => {

@@ -60,31 +60,20 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
-  let userId = null; // Initialize userId
+  socket.on('join', (orderId) => {
+    console.log(`Client joined order room: ${orderId}`);
+    socket.join(orderId);
+  });
 
-  socket.on('join', (id) => {
-    userId = id; // Assign userId when the user joins
-    updateUserStatus(userId, 'Online');
-    io.emit('statusUpdate', { userId, status: 'Online' });
+  socket.on('updateRiderLocation', ({ orderId, location }) => {
+    console.log(`Rider location updated for order ${orderId}:`, location);
+    io.to(orderId).emit('riderLocationUpdate', location);
   });
 
   socket.on('disconnect', () => {
-    if (userId) {
-      updateUserStatus(userId, 'Offline');
-      io.emit('statusUpdate', { userId, status: 'Offline' });
-    }
     console.log('Client disconnected:', socket.id);
   });
 });
-
-
-const updateUserStatus = async (userId, status) => {
-  try {
-    await userDal.updateUserStatus(userId, status);
-  } catch (error) {
-    console.error('Error updating user status:', error);
-  }
-};
 
 process.on('SIGTERM', () => {
     console.log('SIGTERM signal received: closing HTTP server');
@@ -105,5 +94,5 @@ process.on('SIGINT', () => {
 // Start the server
 const PORT = process.env.PORT || 6001;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://192.168.100.3:${PORT}`);
+    console.log(`Server running on http://192.168.254.200:${PORT}`);
 });

@@ -5,10 +5,74 @@ const Category = require('../models/category.model');
 const Product = require('../models/product.model');
 const PaymentMethod = require('../models/paymentMethod.model');
 const menuOptionDAL = require('../DAL/menuOption.dal');
+const Order = require('../models/order.model');
+
+
+exports.acceptOrder = async (req, res) => {
+  const { id: orderId } = req.params; // Order ID from route
+  const riderId = req.user.id; // Rider's ID from authenticated user
+
+  try {
+    // Validate user type
+    if (!req.user || req.user.userType !== 'Rider') {
+      return res.status(403).json({ message: 'Only riders can accept orders' });
+    }
+
+    // Update the order status and assign the rider
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        'deliveryDetails.status': 'dispatched',
+        updatedBy: riderId, // Track who updated it
+      },
+      { new: true },
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.status(200).json({
+      message: 'Order accepted successfully',
+      order: updatedOrder,
+    });
+  } catch (err) {
+    console.error('Error in acceptOrder:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+
+exports.getPendingOrders = async (req, res) => {
+  try {
+    const pendingOrders = await Order.find({
+      'deliveryDetails.status': 'pending',
+    })
+      .populate('customer', 'username')
+      .populate('store', 'name')
+      .populate('paymentMethod', 'type')
+      .populate('products.product', 'name price')
+      .populate('products.menuOptions', 'optionName priceModifier');
+
+    console.log('Pending orders fetched:', pendingOrders);
+
+    if (!pendingOrders || pendingOrders.length === 0) {
+      return res.status(404).json({ message: 'No pending orders found' });
+    }
+
+    // Send JSON response
+    res.status(200).json(pendingOrders);
+  } catch (err) {
+    console.error('Error in getPendingOrders:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 exports.createOrder = async (req, res) => {
   const { customer, store, products, createdBy, paymentMethodId } = req.body;
-console.log('Request received:', JSON.stringify(req.body, null, 2));
+  console.log('Request received:', JSON.stringify(req.body, null, 2));
 
   try {
     // Validate products
@@ -159,7 +223,6 @@ console.log('Request received:', JSON.stringify(req.body, null, 2));
   }
 };
 
-
 // Other CRUD operations
 exports.getOrderById = async (req, res) => {
   try {
@@ -176,6 +239,21 @@ exports.getOrders = async (req, res) => {
     const orders = await orderDAL.getAllOrders();
     res.status(200).json(orders);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getOrdersByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const orders = await orderDAL.getOrdersByUserId(userId);
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: 'No orders found for this user' });
+    }
+    res.status(200).json(orders);
+  } catch (err) {
+    console.log({ error: err.message });
     res.status(500).json({ error: err.message });
   }
 };
@@ -262,31 +340,6 @@ exports.getRoute = async (req, res) => {
         startLocation: route.legs[0].start_location,
         endLocation: route.legs[0].end_location,
       },
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.acceptOrder = async (req, res) => {
-  const { id: orderId } = req.params; // Order ID from route
-  const riderId = req.user.id; // Rider's ID from authenticated user
-
-  try {
-    // Check if the user is a rider
-    if (req.user.userType !== 'rider') {
-      return res.status(403).json({ message: 'Only riders can accept orders' });
-    }
-
-    // Assign the order to the rider
-    const updatedOrder = await orderDAL.assignRiderToOrder(orderId, riderId);
-    if (!updatedOrder) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    res.status(200).json({
-      message: 'Order accepted successfully',
-      order: updatedOrder,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
