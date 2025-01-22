@@ -50,8 +50,9 @@ exports.getOrdersByUserId = async (userId) => {
     .populate('customer', 'username')
     .populate('store', 'name')
     .populate('products.product', 'name price image')
-    .populate('paymentMethod', 'method') // Ensure this is populated correctly
-    .populate('products.menuOptions', 'optionName priceModifier');
+    .populate('paymentMethod', 'method')
+    .populate('products.menuOptions', 'optionName priceModifier')
+    .select('totalAmount grandTotalAmount deliveryDetails'); // Include grandTotalAmount in the selection
 };
 
 // Update an order

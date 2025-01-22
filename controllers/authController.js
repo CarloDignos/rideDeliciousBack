@@ -79,9 +79,9 @@ const login = async (req, res) => {
 
         // Generate the token
         const token = jwt.sign(
-            { id: user._id, userType: user.userType },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+          { id: user._id, userType: user.userType },
+          process.env.JWT_SECRET,
+          { expiresIn: '168h' },
         );        
 
         // Store the token in the user's document (if needed)
@@ -373,39 +373,50 @@ const updateUserPicture = async (req, res) => {
 };
 
 const updateUserInformation = async (req, res) => {
-    try {
-        const { userId, updateData } = req.body;
-        const loggedInUser = req.user; // User who is making the request
+  try {
+    const { userId, updateData } = req.body;
+    const loggedInUser = req.user;
 
-        // Fetch the user to be updated
-        const userToUpdate = await userDal.getUserById(userId);
-
-        if (!userToUpdate) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Check if the logged-in user is an Admin
-        if (loggedInUser.userType === 'Admin') {
-            // Admin can update any user's information
-            const updatedUser = await userDal.updateUser(userId, updateData);
-            return res.status(200).json({ message: 'User updated successfully', user: updatedUser });
-        }
-
-        // Check if the logged-in user is the same as the user being updated
-        if (loggedInUser._id.toString() === userId) {
-            // Customers and Riders can update their own information
-            const updatedUser = await userDal.updateUser(userId, updateData);
-            return res.status(200).json({ message: 'User updated successfully', user: updatedUser });
-        }
-
-        // If not Admin and not updating their own info, deny the request
-        return res.status(403).json({ message: 'Permission denied: You can only update your own information.' });
-
-    } catch (error) {
-        console.error('Error updating user information:', error);
-        res.status(500).json({ message: 'Error updating user information', error });
+    // Validate logged-in user
+    if (!loggedInUser || !loggedInUser._id) {
+      return res
+        .status(401)
+        .json({ message: 'Unauthorized: User not authenticated' });
     }
+
+    // Validate userId
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ message: 'Missing userId in request body' });
+    }
+
+    // Check if user exists
+    const userToUpdate = await userDal.getUserById(userId);
+    if (!userToUpdate) {
+      return res
+        .status(404)
+        .json({ message: 'User not found with the provided ID' });
+    }
+
+    // Check permissions
+    if (
+      loggedInUser.userType === 'Admin' ||
+      loggedInUser._id.toString() === userId
+    ) {
+      const updatedUser = await userDal.updateUser(userId, updateData);
+      return res
+        .status(200)
+        .json({ message: 'User updated successfully', user: updatedUser });
+    }
+
+    return res.status(403).json({ message: 'Permission denied' });
+  } catch (error) {
+    console.error('Error updating user information:', error);
+    return res.status(500).json({ message: 'Internal server error', error });
+  }
 };
+
 
 // Get profile by customer ID
 const getProfileByCustomer = async (req, res) => {

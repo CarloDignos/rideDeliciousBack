@@ -29,6 +29,7 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     totalAmount: { type: Number, required: true },
+    grandTotalAmount: { type: Number },
     paymentMethod: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'PaymentMethod',
@@ -37,7 +38,7 @@ const orderSchema = new mongoose.Schema(
     deliveryDetails: {
       status: {
         type: String,
-        enum: ['pending', 'dispatched', 'delivered', 'cancelled'],
+        enum: ['pending', 'dispatched', 'on the way', 'delivered', 'cancelled'],
         default: 'pending',
       },
       route: {
@@ -52,6 +53,7 @@ const orderSchema = new mongoose.Schema(
         distance: { type: Number },
         estimatedTime: { type: Number },
       },
+      deliveryFee: { type: Number },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

@@ -71,9 +71,14 @@ exports.getPendingOrders = async (req, res) => {
 };
 
 exports.createOrder = async (req, res) => {
-  const { customer, store, products, createdBy, paymentMethodId } = req.body;
+  const { customer, store, products, createdBy, paymentMethodId, distance } =
+    req.body;
   console.log('Request received:', JSON.stringify(req.body, null, 2));
 
+  // Validate the distance
+  if (typeof distance !== 'number' || distance < 0) {
+    return res.status(400).json({ message: 'Invalid distance provided.' });
+  }
   try {
     // Validate products
     if (!Array.isArray(products) || products.length === 0) {
@@ -182,22 +187,46 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const distance = data.rows[0].elements[0].distance.value / 1000; // In kilometers
+    // Extract distance (in meters) and estimated time (in seconds)
+    const distanceInMeters = data.rows[0].elements[0].distance.value;
     const estimatedTime = data.rows[0].elements[0].duration.value / 60; // In minutes
 
-    // Calculate total amount
-    const totalAmount = productDetails.reduce((sum, p) => {
-      const quantity = p.quantity || 0;
-      const price = p.price || 0;
-      return sum + quantity * price;
-    }, 0);
+    // Convert distance to kilometers
+    const distanceInKm = distanceInMeters / 1000;
 
+    // Function to compute delivery fee
+    const computeDeliveryFee = (distance) => {
+      if (distance <= 2) {
+        return 40; // Minimum fee for distances ≤ 2 km
+      }
+
+      const extraDistanceInMeters = (distance - 2) * 1000; // Convert extra distance to meters
+      const extraFee = Math.ceil(extraDistanceInMeters / 100); // ₱1 per 100 meters
+      return 40 + extraFee; // Total fee
+    };
+    // Calculate delivery fee
+    const deliveryFee = computeDeliveryFee(distance);
+
+    // Log delivery fee for debugging
+    console.log('Distance:', distance, 'km');
+    console.log('Delivery Fee:', deliveryFee);
+    // Calculate total amount (products + delivery fee)
+    const totalAmount =
+      productDetails.reduce((sum, p) => {
+        const quantity = p.quantity || 0;
+        const price = p.price || 0;
+        return sum + quantity * price;
+      }, 0);
+    
+    const grandTotalAmount = totalAmount + deliveryFee
+  console.log('Grand Total Amount:', + grandTotalAmount)
     // Prepare order data
     const orderData = {
       customer,
       store,
       products: productDetails,
       totalAmount,
+      grandTotalAmount,
       deliveryDetails: {
         route: {
           storeCoordinates: { latitude: storeLat, longitude: storeLng },
@@ -205,9 +234,10 @@ exports.createOrder = async (req, res) => {
             latitude: customerLat,
             longitude: customerLng,
           },
-          distance,
+          distance: distanceInKm,
           estimatedTime,
         },
+        deliveryFee, // Include delivery fee in delivery details
       },
       paymentMethod: paymentMethod._id,
       createdBy,
@@ -222,6 +252,8 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
 
 // Other CRUD operations
 exports.getOrderById = async (req, res) => {
