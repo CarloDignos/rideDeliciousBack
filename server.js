@@ -1,98 +1,99 @@
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const session = require('express-session');
-const passport = require('passport');
-const socketIo = require('socket.io');
-const connectDB = require('./config/db');
-const userRoutes = require('./routes/userRoutes'); // Import the user routes
+require("dotenv").config();
+const express = require("express");
+const http = require("http");
+const session = require("express-session");
+const passport = require("passport");
+const socketIo = require("socket.io");
+const connectDB = require("./config/db");
+const userRoutes = require("./routes/userRoutes"); // Import the user routes
 const productRoutes = require("./routes/product.routes");
 const orderRoutes = require("./routes/order.routes");
 const categoryRoutes = require("./routes/category.routes");
-const cors = require('cors');
+const cors = require("cors");
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-const cartRoutes = require('./routes/cart.routes');
-const menuOptionRoutes = require('./routes/menuOption.routes');
-const paymentMethodRoutes = require('./routes/paymentMethod.routes');
+const cartRoutes = require("./routes/cart.routes");
+const menuOptionRoutes = require("./routes/menuOption.routes");
+const paymentMethodRoutes = require("./routes/paymentMethod.routes");
 
 // Middleware to parse JSON
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
-
 // **CORS Configuration**
 const corsOptions = {
-  origin: ['http://192.168.100.3:8081', 'http://localhost:8081'],// Replace with your frontend's URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these HTTP methods
+  origin: ["http://194.195.90.101:8081", "http://ridedelicious.com"], // Replace with your frontend's URL
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allow these HTTP methods
   credentials: true, // Allow cookies and credentials to be sent
 };
 app.use(cors(corsOptions));
 
 // **Add express-session middleware**
-app.use(session({
-    secret: 'your_secret_key', // Replace this with a strong secret
-    resave: false,  // Avoid resaving session if nothing is changed
+app.use(
+  session({
+    secret: "your_secret_key", // Replace this with a strong secret
+    resave: false, // Avoid resaving session if nothing is changed
     saveUninitialized: false, // Do not create session until something is stored
-}));
+  })
+);
 
 // Initialize Passport and use session
 app.use(passport.initialize());
-app.use(passport.session());  // This is what enables session-based authentication
+app.use(passport.session()); // This is what enables session-based authentication
 
 // Connect to MongoDB
 connectDB();
 
 // Use the user routes
-app.use('/api/v1', userRoutes); // Mount the user routes
+app.use("/api/v1", userRoutes); // Mount the user routes
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/orders", orderRoutes);
-app.use('/api/v1/cart', cartRoutes);
-app.use('/api/v1/menu-options', menuOptionRoutes);
-app.use('/api/v1/payment-methods', paymentMethodRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/menu-options", menuOptionRoutes);
+app.use("/api/v1/payment-methods", paymentMethodRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Your are connected into backend.')
+app.get("/", (req, res) => {
+  res.send("Your are connected into backend.");
 });
 
-io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("New client connected:", socket.id);
 
-  socket.on('join', (orderId) => {
+  socket.on("join", (orderId) => {
     console.log(`Client joined order room: ${orderId}`);
     socket.join(orderId);
   });
 
-  socket.on('updateRiderLocation', ({ orderId, location }) => {
+  socket.on("updateRiderLocation", ({ orderId, location }) => {
     console.log(`Rider location updated for order ${orderId}:`, location);
-    io.to(orderId).emit('riderLocationUpdate', location);
+    io.to(orderId).emit("riderLocationUpdate", location);
   });
 
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
   });
 });
 
-process.on('SIGTERM', () => {
-    console.log('SIGTERM signal received: closing HTTP server');
-    server.close(() => {
-        console.log('HTTP server closed');
-        process.exit(0);
-    });
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
 });
 
-process.on('SIGINT', () => {
-    console.log('SIGINT signal received: closing HTTP server');
-    server.close(() => {
-        console.log('HTTP server closed');
-        process.exit(0);
-    });
+process.on("SIGINT", () => {
+  console.log("SIGINT signal received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
 });
 
 // Start the server
 const PORT = process.env.PORT || 6001;
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://192.168.254.200:${PORT}`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on http://194.195.90.101:${PORT}`);
 });
