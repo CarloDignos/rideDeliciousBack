@@ -21,12 +21,18 @@ const paymentMethodRoutes = require("./routes/paymentMethod.routes");
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
-// **CORS Configuration**
+// Adjust CORS options
 const corsOptions = {
-  origin: ["http://194.195.90.101:8081", "http://ridedelicious.com"], // Replace with your frontend's URL
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allow these HTTP methods
-  credentials: true, // Allow cookies and credentials to be sent
+  origin: [
+    "https://www.api.ridedelicious.com", // Your production backend domain
+    "https://ridedelicious.com",        // Your production frontend domain
+    "http://localhost:8081",            // React Native Metro bundler (for development purposes)
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
+  credentials: true, // Allow cookies/credentials if necessary
 };
+
 app.use(cors(corsOptions));
 
 // **Add express-session middleware**
