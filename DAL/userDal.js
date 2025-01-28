@@ -52,6 +52,10 @@ const getUserByEmail = async (email) => {
     return await User.findOne({ email, archived: false });
 };
 
+const getUserBycontactNumber = async (contactNumber) => {
+  return await User.findOne({ contactNumber, archived: false });
+};
+
 const setResetToken = async (email, token, expires) => {
     return await User.findOneAndUpdate(
         { email },
@@ -94,6 +98,7 @@ module.exports = {
     deleteUser,
     updateUserStatus,
     getUserByEmail,
+    getUserBycontactNumber,
     setResetToken,
     setSecurityQuestions,
     verifySecurityAnswer

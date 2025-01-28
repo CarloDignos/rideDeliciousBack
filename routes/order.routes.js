@@ -9,6 +9,7 @@ const {
   getRoute,
   getOrdersByUserId,
   getPendingOrders,
+  getOrdersUpdatedByRider,
 } = require('../controllers/order.controller');
 const {
   authenticateToken,
@@ -26,6 +27,12 @@ router.get(
   getPendingOrders,
 );
 router.get('/', authenticateToken, authorize('Admin'), getOrders); // Admins can view all orders
+router.get(
+  '/report',
+  authenticateToken,
+  authorize('Rider', 'Admin'),
+  getOrdersUpdatedByRider,
+);
 router.get('/:id', authenticateToken, getOrderById); // Authenticated users can view an order by ID
 router.get(
   '/user/:userId',
@@ -33,7 +40,7 @@ router.get(
   authorize('Customer', 'Admin'),
   getOrdersByUserId,
 );
-router.put('/:id', authenticateToken, authorize('Customer'), updateOrder); // Customers can update their orders
+router.put('/:id', authenticateToken, authorize('Rider'), updateOrder); // Customers can update their orders
 router.delete('/:id', authenticateToken, authorize('Customer'), deleteOrder); // Customers can delete their orders
 router.get('/:id/route', authenticateToken, getRoute); // Customer and Rider can view the route
 

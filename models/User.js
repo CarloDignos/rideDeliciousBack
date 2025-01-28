@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema({
         match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
     },
     password: { type: String }, 
+    contactNumber: { type: String, unique: true, sparse: true },
     userType: { type: String, enum: ['Admin', 'Rider', 'Customer'], required: true },
     status: { type: String, enum: ['Online', 'Offline'], default: 'Offline' },
     createdBy: { type: String },

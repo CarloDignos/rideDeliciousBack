@@ -3,9 +3,10 @@ const router = express.Router();
 const passport = require('passport');
 const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middlewares/authMiddleware');
+const upload = require('../middlewares/upload');
 
 // Public routes (No authentication required)
-router.post('/register', authController.register);
+router.post('/register', upload.single('picture'), authController.register);
 router.post('/login', authController.login);
 router.post('/request-password-reset', authController.requestPasswordReset);
 router.post('/reset-password', authController.resetPassword);

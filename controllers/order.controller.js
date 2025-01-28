@@ -290,15 +290,74 @@ exports.getOrdersByUserId = async (req, res) => {
   }
 };
 
+exports.getOrdersUpdatedByRider = async (req, res) => {
+  try {
+    const { id: riderIdFromQuery } = req.query; // Rider ID from query params
+    const userId = req.user.id; // Admin's or Rider's ID from the token
+    const userType = req.user.userType; // Admin or Rider
+
+    let riderId;
+
+    // Admin can fetch any rider's records; Rider can only fetch their own
+    if (userType === 'Admin') {
+      riderId = riderIdFromQuery || userId; // Use query param or fallback to Admin's ID
+    } else if (userType === 'Rider') {
+      riderId = userId; // Riders fetch only their own records
+    } else {
+      return res
+        .status(403)
+        .json({ message: 'Access denied: Unauthorized role' });
+    }
+
+    // Fetch orders updated by the rider
+    const orders = await Order.find({ updatedBy: riderId })
+      .populate('customer', 'username')
+      .populate('store', 'name')
+      .populate('products.product', 'name price')
+      .populate('products.menuOptions', 'optionName priceModifier')
+      .populate('paymentMethod', 'type')
+      .select('totalAmount deliveryDetails createdAt updatedAt');
+
+    if (!orders || orders.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'No orders found for this rider.' });
+    }
+
+    res.status(200).json({
+      message: 'Orders fetched successfully',
+      riderId,
+      totalOrders: orders.length,
+      orders,
+    });
+  } catch (err) {
+    console.error('Error fetching rider orders:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 exports.updateOrder = async (req, res) => {
   try {
-    const updatedOrder = await orderDAL.updateOrder(req.params.id, req.body);
-    if (!updatedOrder)
+    const orderId = req.params.id;
+    const updateData = req.body;
+
+    // Log the request payload for debugging
+    console.log('Request payload:', updateData);
+
+    const updatedOrder = await orderDAL.updateOrder(orderId, updateData);
+
+    if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
-    res
-      .status(200)
-      .json({ message: 'Order updated successfully', order: updatedOrder });
+    }
+
+    // Respond with the updated order
+    res.status(200).json({
+      message: 'Order updated successfully',
+      order: updatedOrder,
+    });
   } catch (err) {
+    console.error('Error updating order:', err);
     res.status(500).json({ error: err.message });
   }
 };

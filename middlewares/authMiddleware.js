@@ -27,17 +27,20 @@ const authenticateToken = async (req, res, next) => {
 };
 
 
-const authorize = (role) => {
-    return (req, res, next) => {
-        console.log("User Info:", req.user);
-            if (req.user && req.user.userType.toLowerCase() === role.toLowerCase()) {
-            return next();
-            }
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    console.log('User Info:', req.user);
 
-        return res.status(403).json({ message: "Access denied: Unauthorized role" });
-    };
+    // Check if the user's role is included in the allowed roles
+    if (req.user && roles.includes(req.user.userType)) {
+      return next();
+    }
+
+    return res
+      .status(403)
+      .json({ message: 'Access denied: Unauthorized role' });
+  };
 };
-
 
 module.exports = { authenticateToken, authorize };
 
