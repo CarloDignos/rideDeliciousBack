@@ -53,7 +53,7 @@ exports.getPendingOrders = async (req, res) => {
       .populate('customer', 'username')
       .populate('store', 'name')
       .populate('paymentMethod', 'type')
-      .populate('products.product', 'name price')
+      .populate('products.product', 'name image price')
       .populate('products.menuOptions', 'optionName priceModifier');
 
     console.log('Pending orders fetched:', pendingOrders);
@@ -313,7 +313,7 @@ exports.getOrdersUpdatedByRider = async (req, res) => {
     const orders = await Order.find({ updatedBy: riderId })
       .populate('customer', 'username')
       .populate('store', 'name')
-      .populate('products.product', 'name price')
+      .populate('products.product', 'name image price')
       .populate('products.menuOptions', 'optionName priceModifier')
       .populate('paymentMethod', 'type')
       .select('totalAmount deliveryDetails createdAt updatedAt');

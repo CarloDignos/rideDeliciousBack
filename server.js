@@ -34,6 +34,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  console.log("CORS Request:", req.headers.origin);
+  next();
+});
 
 // **Add express-session middleware**
 app.use(
@@ -101,5 +105,5 @@ process.on("SIGINT", () => {
 // Start the server
 const PORT = process.env.PORT || 6001;
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://194.195.90.101:${PORT}`);
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });

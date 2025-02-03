@@ -11,7 +11,7 @@ exports.getPendingOrders = async () => {
   return await Order.find({ 'deliveryDetails.status': 'pending' })
     .populate('customer', 'username')
     .populate('store', 'name')
-    .populate('products.product', 'name price')
+    .populate('products.product', 'name image price')
     .populate('products.menuOptions', 'optionName priceModifier');
 };
 
@@ -32,7 +32,7 @@ exports.getOrderById = async (orderId) => {
   return await Order.findById(orderId)
     .populate('customer', 'username contactNumber')
     .populate('store', 'name')
-    .populate('products.product', 'name price')
+    .populate('products.product', 'name image price')
     .populate('products.menuOptions', 'optionName priceModifier'); // Include menu options
 };
 
@@ -40,7 +40,7 @@ exports.getAllOrders = async () => {
   return await Order.find()
     .populate('customer', 'username contactNumber')
     .populate('store', 'name')
-    .populate('products.product', 'name price')
+    .populate('products.product', 'name image price')
     .populate('products.menuOptions', 'optionName priceModifier'); // Include menu options
 };
 
