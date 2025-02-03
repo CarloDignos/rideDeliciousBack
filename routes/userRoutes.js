@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const authController = require('../controllers/authController');
-const { authenticateToken } = require('../middlewares/authMiddleware');
+const {
+  authenticateToken,
+  authorize,
+} = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 
 // Public routes (No authentication required)
@@ -36,5 +39,18 @@ router.get(
         res.redirect(`exp://whybipk-anonymous-8081.exp.direct/login?token=${token}`); // Pass token to mobile app
     }
 );
+router.delete(
+  '/delete/:userId',
+  authenticateToken,
+  authorize('Admin'),
+  authController.deleteUser,
+);
+router.delete(
+  '/delete-permanent/:userId',
+  authenticateToken,
+  authorize('Admin'),
+  authController.permanentlyDeleteUser,
+);
+
 
 module.exports = router;

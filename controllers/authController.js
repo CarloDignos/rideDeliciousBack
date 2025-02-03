@@ -580,6 +580,50 @@ const validateToken = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params; // Get user ID from URL parameter
+
+    // Check if the user exists
+    const user = await userDal.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Soft delete the user (archive instead of deleting permanently)
+    await userDal.deleteUser(userId);
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res
+      .status(500)
+      .json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+// Add permanent deletion function if needed
+const permanentlyDeleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await userDal.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await userDal.permanentlyDeleteUser(userId);
+
+    res.status(200).json({ message: 'User permanently deleted' });
+  } catch (error) {
+    console.error('Error permanently deleting user:', error);
+    res
+      .status(500)
+      .json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+
 module.exports = {
   addAddressToUser,
   register,
@@ -598,4 +642,6 @@ module.exports = {
   getAllCustomers,
   getAllRiders,
   validateToken,
+  deleteUser,
+  permanentlyDeleteUser,
 };

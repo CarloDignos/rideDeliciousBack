@@ -40,9 +40,6 @@ const updateUser = async (id, updateData) => {
     return await User.findByIdAndUpdate(id, updateData, { new: true });
 };
 
-const deleteUser = async (id) => {
-    return await User.findByIdAndUpdate(id, { archived: true });
-};
 
 const updateUserStatus = async (id, status) => {
     return await User.findByIdAndUpdate(id, { status, modifiedAt: Date.now() }, { new: true });
@@ -83,23 +80,37 @@ const verifySecurityAnswer = async (userId, questionIndex, answer) => {
     return await bcrypt.compare(answer, user.securityQuestions[questionIndex].answerHash);
 };
 
+const deleteUser = async (userId) => {
+  return await User.findByIdAndUpdate(
+    userId,
+    { archived: true },
+    { new: true },
+  );
+};
+
+const permanentlyDeleteUser = async (userId) => {
+  return await User.findByIdAndDelete(userId);
+};
+
 
 
 
 module.exports = {
-    createAddress,
-    associateAddressToUser,
-    createUser,
-    getUserByUsername,
-    getUserById,
-    getAllCustomers,
-    getAllRiders,
-    updateUser,
-    deleteUser,
-    updateUserStatus,
-    getUserByEmail,
-    getUserBycontactNumber,
-    setResetToken,
-    setSecurityQuestions,
-    verifySecurityAnswer
+  createAddress,
+  associateAddressToUser,
+  createUser,
+  getUserByUsername,
+  getUserById,
+  getAllCustomers,
+  getAllRiders,
+  updateUser,
+  deleteUser,
+  updateUserStatus,
+  getUserByEmail,
+  getUserBycontactNumber,
+  setResetToken,
+  setSecurityQuestions,
+  verifySecurityAnswer,
+  deleteUser,
+  permanentlyDeleteUser,
 };
