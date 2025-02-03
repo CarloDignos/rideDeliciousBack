@@ -440,28 +440,6 @@ const updateUserInformation = async (req, res) => {
     const loggedInUser = req.user;
 
     // Validate logged-in user
-    if (!loggedInUser || !loggedInUser._id) {
-      return res
-        .status(401)
-        .json({ message: 'Unauthorized: User not authenticated' });
-    }
-
-    // Validate userId
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ message: 'Missing userId in request body' });
-    }
-
-    // Check if user exists
-    const userToUpdate = await userDal.getUserById(userId);
-    if (!userToUpdate) {
-      return res
-        .status(404)
-        .json({ message: 'User not found with the provided ID' });
-    }
-
-    // Check permissions
     if (
       loggedInUser.userType === 'Admin' ||
       loggedInUser._id.toString() === userId
