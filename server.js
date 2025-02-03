@@ -24,7 +24,7 @@ app.use("/uploads", express.static("uploads"));
 // Adjust CORS options
 const corsOptions = {
   origin: [
-    "https://www.api.ridedelicious.com", // Your production backend domain
+    "https://api.ridedelicious.com", // Your production backend domain
     "https://ridedelicious.com",        // Your production frontend domain
     "http://localhost:8081",            // React Native Metro bundler (for development purposes)
   ],
