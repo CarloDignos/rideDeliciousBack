@@ -9,24 +9,44 @@ exports.createProduct = async (req, res) => {
     console.log(req.file); // Debugging: Check if the file is uploaded
     const image = req.file ? `uploads/${req.file.filename}` : null;
 
-    // Validate input fields
-    if (!name || !description || !price || !markUp || !category || !createdBy) {
-      return res.status(400).json({ message: "All fields are required" });
+    // Convert price and markUp to numbers
+    const priceNum = Number(price);
+    const markUpNum = Number(markUp);
+
+    // Validate required fields
+    if (
+      !name ||
+      !description ||
+      isNaN(priceNum) ||
+      isNaN(markUpNum) ||
+      !category ||
+      !createdBy
+    ) {
+      return res
+        .status(400)
+        .json({ message: 'All fields are required and must be valid numbers' });
     }
 
-    // Calculate selling price
-    const sellingPrice = price + (price * markUp) / 100;
-    if (isNaN(sellingPrice)) {
-      return res.status(400).json({ message: "Invalid price or markUp" });
+    // Ensure price is a positive number
+    if (priceNum <= 0) {
+      return res
+        .status(400)
+        .json({ message: 'Price must be greater than zero' });
     }
+
+    // Check if markUp is a percentage (e.g., 12) or a decimal (e.g., 0.12)
+    const sellingPrice =
+      markUpNum < 1
+        ? priceNum + priceNum * markUpNum // If markUp is a decimal (0.12 for 12%)
+        : priceNum + priceNum * (markUpNum / 100); // If markUp is a percentage (12 for 12%)
 
     // Prepare product data
     const productData = {
       name,
       description,
-      price,
-      markUp,
-      sellingPrice,
+      price: priceNum,
+      markUp: markUpNum,
+      sellingPrice: Number(sellingPrice.toFixed(2)), // Round to 2 decimal places
       category,
       createdBy,
       image, // Save image path in correct format
@@ -35,11 +55,12 @@ exports.createProduct = async (req, res) => {
     // Create and save product
     const product = await Product.create(productData);
 
-    res.status(201).json({ message: "Product created successfully", product });
+    res.status(201).json({ message: 'Product created successfully', product });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Update a product
 exports.updateProduct = async (req, res) => {
@@ -108,5 +129,25 @@ exports.getProductsByCategory = async (req, res) => {
   } catch (err) {
     console.error("Error fetching products by category:", err);
     res.status(500).json({ error: "An error occurred while fetching products" });
+  }
+};
+
+
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if product exists
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Delete product from database
+    await Product.findByIdAndDelete(id);
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

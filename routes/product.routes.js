@@ -5,7 +5,8 @@ const {
   getProductsByCategory,
   updateProduct,
   getProductDetails,
-} = require("../controllers/product.controller");
+  deleteProduct,
+} = require('../controllers/product.controller');
 const { authenticateToken, authorize } = require("../middlewares/authMiddleware");
 const multer = require("multer");
 const fs = require("fs");
@@ -32,5 +33,6 @@ router.get("/", authenticateToken, getProducts); // Authenticated users can view
 router.get("/category/:category", authenticateToken, getProductsByCategory); // Authenticated users can view products by category
 router.put("/:id", authenticateToken, authorize("Admin"), updateProduct); // Only admin can update products
 router.get("/:id", authenticateToken, getProductDetails); // Authenticated users can view product details
+router.delete("/:id", authenticateToken, authorize("Admin"), deleteProduct); // Only admin can delete products
 
 module.exports = router;

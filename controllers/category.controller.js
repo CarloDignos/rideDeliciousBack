@@ -1,37 +1,66 @@
 const categoryDAL = require("../DAL/category.dal");
+const Category = require("../models/category.model"); // Import Product model
+const Product = require("../models/product.model"); // Import Product model
 const axios = require("axios");
 require("dotenv").config();
+const multer = require("multer");
+const path = require("path");
+
+// Set up multer storage for image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/categories/"); // Destination folder for images
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
+});
+
+// Filter image file types
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed!"), false);
+  }
+};
+
+// Configure Multer
+const upload = multer({ storage, fileFilter });
+
+exports.uploadCategoryImage = upload.single("image"); // Middleware to handle single image upload
+
 
 // Create a category with a Google Maps-formatted address
 exports.createCategory = async (req, res) => {
   try {
-    const { address } = req.body;
+    let { name, description, address } = req.body;
+    let imageUrl = req.file ? `/uploads/categories/${req.file.filename}` : null; // Save image path
 
     if (!address.latitude || !address.longitude) {
       // Fetch latitude and longitude from Google Maps API
       const geocodeResponse = await axios.get(
-        "https://maps.googleapis.com/maps/api/geocode/json",
+        'https://maps.googleapis.com/maps/api/geocode/json',
         {
           params: {
             address: `${address.street}, ${address.city}, ${address.state}, ${address.zipCode}`,
             key: process.env.GOOGLE_MAPS_API_KEY,
-            region: "PH", // Limit results to the Philippines
+            region: 'PH', // Limit results to the Philippines
           },
-        }
+        },
       );
 
-      if (geocodeResponse.data.status === "OK") {
+      if (geocodeResponse.data.status === 'OK') {
         const result = geocodeResponse.data.results[0];
         const location = result.geometry.location;
 
         // Parse Google's formatted address components
         const formattedAddress = {
-          formattedAddress: result.formatted_address, // The full Google-formatted address
-          street: getAddressComponent(result, "route"),
-          neighborhood: getAddressComponent(result, "sublocality_level_1") || getAddressComponent(result, "neighborhood"),
-          city: getAddressComponent(result, "locality"),
-          state: getAddressComponent(result, "administrative_area_level_1"),
-          zipCode: getAddressComponent(result, "postal_code"),
+          formattedAddress: result.formatted_address,
+          street: getAddressComponent(result, 'route'),
+          city: getAddressComponent(result, 'locality'),
+          state: getAddressComponent(result, 'administrative_area_level_1'),
+          zipCode: getAddressComponent(result, 'postal_code'),
           latitude: location.lat,
           longitude: location.lng,
         };
@@ -43,20 +72,18 @@ exports.createCategory = async (req, res) => {
         address.city = formattedAddress.city || address.city;
         address.state = formattedAddress.state || address.state;
         address.zipCode = formattedAddress.zipCode || address.zipCode;
-      } else if (geocodeResponse.data.status === "ZERO_RESULTS") {
-        return res.status(400).json({
-          error: "Address must be located within the Philippines.",
-        });
       } else {
-        return res.status(400).json({
-          error: `Geocoding API Error: ${geocodeResponse.data.status}`,
-        });
+        return res.status(400).json({ error: 'Invalid address.' });
       }
     }
 
-    // Save category with formatted address
-    const category = await categoryDAL.createCategory(req.body);
-    res.status(201).json({ message: "Category created successfully", category });
+    // Save category with image and address
+    const categoryData = { name, description, image: imageUrl, address };
+    const category = await categoryDAL.createCategory(categoryData);
+
+    res
+      .status(201)
+      .json({ message: 'Category created successfully', category });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -76,6 +103,30 @@ exports.getCategories = async (req, res) => {
   try {
     const categories = await categoryDAL.getAllCategories();
     res.status(200).json(categories);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+// Delete a category and its associated products
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if category exists
+    const category = await Category.findById(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Delete associated products before deleting the category
+    await Product.deleteMany({ category: id });
+
+    // Delete category from the database
+    await Category.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Category and associated products deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
