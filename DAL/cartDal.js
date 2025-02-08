@@ -8,7 +8,7 @@ const getCartByUserId = async (userId) => {
   const cartItems = await CartItem.find({ cartId: cart._id })
     .populate({
       path: 'productId',
-      select: '_id name price image category',
+      select: '_id name price sellingPrice image category',
       populate: {
         path: 'category',
         select: 'name address.name address.latitude address.longitude', // Include address details

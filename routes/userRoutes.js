@@ -41,8 +41,6 @@ router.get(
 );
 router.delete(
   '/delete/:userId',
-  authenticateToken,
-  authorize('Admin'),
   authController.deleteUser,
 );
 router.delete(
