@@ -17,7 +17,7 @@ const register = async (req, res) => {
       contactNumber,
       userType,
       createdBy,
-      securityQuestions,
+      securityQuestions, // This might be undefined
       address,
     } = req.body;
 
@@ -40,31 +40,31 @@ const register = async (req, res) => {
       }
     }
 
-    const picture = req.file ? req.file.path : null; // Store the file path
-
-          const picturePath = req.file
-            ? req.file.path.replace(/\\/g, '/')
-            : null;
-
-
+    // Process picture if provided
+    const picture = req.file ? req.file.path : null;
+    const picturePath = req.file ? req.file.path.replace(/\\/g, '/') : null;
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-      
+    // Ensure securityQuestions is an array (default to empty array if undefined)
+    const securityQuestionsArray = Array.isArray(securityQuestions)
+      ? securityQuestions
+      : [];
+
     // Hash the security question answers
     const hashedSecurityQuestions = await Promise.all(
-      securityQuestions.map(async (question) => ({
+      securityQuestionsArray.map(async (question) => ({
         question: question.question,
-        answerHash: await bcrypt.hash(question.answerHash, 10), // Hash the answer here
+        answerHash: await bcrypt.hash(question.answerHash, 10),
       })),
     );
 
     // Create the address if provided
     let addressId = null;
     if (address) {
-      const createdAddress = await addressDal.createAddress(address); // Save address to DB
-      addressId = createdAddress._id; // Get the ID of the created address
+      const createdAddress = await addressDal.createAddress(address);
+      addressId = createdAddress._id;
     }
 
     const newUser = {
@@ -75,22 +75,21 @@ const register = async (req, res) => {
       userType,
       createdBy,
       securityQuestions: hashedSecurityQuestions,
-      picture: picturePath, // Add the picture field if provided
-      address: addressId, // Associate the user with the address
+      picture: picturePath,
+      address: addressId,
     };
 
     const user = await userDal.createUser(newUser);
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
     console.error('Error registering user:', error);
-    res
-      .status(500)
-      .json({
-        message: 'Error registering user',
-        error: error.message || error,
-      });
+    res.status(500).json({
+      message: 'Error registering user',
+      error: error.message || error,
+    });
   }
 };
+
 
 const login = async (req, res) => {
   try {
@@ -120,7 +119,7 @@ const login = async (req, res) => {
     );
 
     // Store the token in the user's document (if needed)
-    await userDal.updateUser(user._id, { authToken: token });
+    await userDal.updateUser(user._id, { authToken: token, status: 'Online' });
 
     // Return user details and token in the response
     res.status(200).json({
@@ -175,8 +174,11 @@ const logout = async (req, res) => {
     const user = await userDal.getUserById(req.user.id);
 
     if (user.authToken === token) {
-      // Invalidate the token by setting it to null
-      await userDal.updateUser(user._id, { authToken: null });
+      // Invalidate the token by setting it to null and update status to "Offline"
+      await userDal.updateUser(user._id, {
+        authToken: null,
+        status: 'Offline',
+      });
       res.status(200).json({ message: 'Logout successful' });
     } else {
       res.status(401).json({ message: 'Invalid token or already logged out' });
@@ -418,42 +420,52 @@ const recoverAccountUsingSecurityQuestions = async (req, res) => {
 
 const updateUserPicture = async (req, res) => {
   try {
-    const { userId, picture } = req.body;
+    // Use the userId from the token or the body
+    const userId = req.user?.id || req.body.userId;
 
-    const updatedUser = await userDal.updateUser(userId, { picture });
+    // Ensure a file is provided
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Compute the picture path (if your client needs the full URL, adjust accordingly)
+    const rawPath = req.file.path.replace(/\\/g, '/');
+    const picturePath = rawPath.startsWith('http') ? rawPath : rawPath; // If you need to prepend a base URL, do it here.
+
+    console.log('Updating picture for user', userId, 'with path:', picturePath);
+
+    // Update the user record with the new picture path.
+    const updatedUser = await userDal.updateUser(userId, {
+      picture: picturePath,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res
-      .status(200)
-      .json({ message: 'Picture updated successfully', user: updatedUser });
+    res.status(200).json({
+      message: 'Picture updated successfully',
+      user: updatedUser,
+    });
   } catch (error) {
+    console.error('Error updating picture:', error);
     res.status(500).json({ message: 'Error updating picture', error });
   }
 };
+
+
 
 const updateUserInformation = async (req, res) => {
   try {
     const { userId, updateData } = req.body;
     const loggedInUser = req.user;
 
-    // Validate logged-in user
-    if (!loggedInUser || !loggedInUser._id) {
+    if (!loggedInUser || !loggedInUser.id) {
       return res
         .status(401)
         .json({ message: 'Unauthorized: User not authenticated' });
     }
 
-    // Validate userId
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ message: 'Missing userId in request body' });
-    }
-
-    // Check if user exists
     const userToUpdate = await userDal.getUserById(userId);
     if (!userToUpdate) {
       return res
@@ -461,23 +473,36 @@ const updateUserInformation = async (req, res) => {
         .json({ message: 'User not found with the provided ID' });
     }
 
-    // Check permissions
+    // Only allow updates if the target user is a Rider
+    if (userToUpdate.userType !== 'Rider') {
+      return res.status(403).json({
+        message: 'Only rider accounts can be edited via this endpoint.',
+      });
+    }
+
+    // If updateData includes a password, hash it first (using the same salt rounds as registration)
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    // Check permissions (if admin or updating own account)
     if (
       loggedInUser.userType === 'Admin' ||
-      loggedInUser._id.toString() === userId
+      loggedInUser.id.toString() === userId
     ) {
       const updatedUser = await userDal.updateUser(userId, updateData);
       return res
         .status(200)
         .json({ message: 'User updated successfully', user: updatedUser });
     }
-
     return res.status(403).json({ message: 'Permission denied' });
   } catch (error) {
     console.error('Error updating user information:', error);
     return res.status(500).json({ message: 'Internal server error', error });
   }
 };
+
+
 
 // Get profile by customer ID
 const getProfileByCustomer = async (req, res) => {

@@ -18,7 +18,12 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/logout', authenticateToken, authController.logout);
 router.put('/status', authenticateToken, authController.updateStatus);
 // Add this route in userRoutes.js or a relevant route file
-router.put('/update-picture', authenticateToken, authController.updateUserPicture);
+router.put(
+  '/update-picture',
+  authenticateToken,
+  upload.single('picture'),
+  authController.updateUserPicture,
+);
 router.put('/update-user', authenticateToken, authController.updateUserInformation);
 router.post('/set-security-questions', authenticateToken, authController.setSecurityQuestions);
 router.post('/recover-account-security-questions', authenticateToken, authController.recoverAccountUsingSecurityQuestions);

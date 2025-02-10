@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   createProduct,
+  bulkCreateProducts,
   getProducts,
   getProductsByCategory,
   updateProduct,
@@ -29,6 +30,12 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 
 router.post("/", authenticateToken, authorize("Admin"), upload.single("image"), createProduct);
+router.post(
+  '/bulk-import',
+  authenticateToken,
+  authorize('Admin'),
+  bulkCreateProducts,
+);
 router.get("/", authenticateToken, getProducts); // Authenticated users can view products
 router.get("/category/:category", authenticateToken, getProductsByCategory); // Authenticated users can view products by category
 router.put("/:id", authenticateToken, authorize("Admin"), updateProduct); // Only admin can update products

@@ -55,7 +55,36 @@ exports.createMenuOption = async (req, res) => {
   }
 };
 
+exports.bulkCreateMenuOptions = async (req, res) => {
+  try {
+    const { menuOptions } = req.body;
 
+    if (!Array.isArray(menuOptions) || menuOptions.length === 0) {
+      return res.status(400).json({ message: 'Invalid menu options data.' });
+    }
+
+    const formattedOptions = menuOptions.map((option) => ({
+      product: option.product,
+      groupName: option.groupName,
+      optionName: option.optionName,
+      priceModifier: parseFloat(option.priceModifier) || 0,
+      isRequired: option.isRequired === 'true',
+      selectionType: option.selectionType || 'single',
+    }));
+
+    const createdOptions = await MenuOption.insertMany(formattedOptions);
+
+    res.status(201).json({
+      message: 'Menu options imported successfully',
+      menuOptions: createdOptions,
+    });
+  } catch (error) {
+    console.error('Error bulk creating menu options:', error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while importing menu options.' });
+  }
+};
 
 // Get menu options for a specific product
 exports.getMenuOptionsByProduct = async (req, res) => {

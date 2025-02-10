@@ -61,6 +61,94 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+exports.bulkCreateProducts = async (req, res) => {
+  try {
+    const { products } = req.body;
+
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ message: 'Invalid products data.' });
+    }
+
+    const processedProducts = [];
+    const errors = [];
+
+    for (const [index, prod] of products.entries()) {
+      try {
+        const { name, description, price, markUp, category, createdBy, image } =
+          prod;
+
+        // Convert price and markUp to numbers
+        const priceNum = Number(price);
+        const markUpNum = Number(markUp);
+
+        // Validate required fields
+        if (
+          !name ||
+          !description ||
+          isNaN(priceNum) ||
+          isNaN(markUpNum) ||
+          !category ||
+          !createdBy
+        ) {
+          throw new Error(
+            `Product at index ${index} is missing required fields or contains invalid data.`,
+          );
+        }
+
+        // Ensure price is a positive number
+        if (priceNum <= 0) {
+          throw new Error(
+            `Product at index ${index} has a price less than or equal to zero.`,
+          );
+        }
+
+        // Calculate selling price
+        const sellingPrice =
+          markUpNum < 1
+            ? priceNum + priceNum * markUpNum // If markUp is a decimal (0.12 for 12%)
+            : priceNum + priceNum * (markUpNum / 100); // If markUp is a percentage (12 for 12%)
+
+        // Prepare product data
+        const productData = {
+          name,
+          description,
+          price: priceNum,
+          markUp: markUpNum,
+          sellingPrice: Number(sellingPrice.toFixed(2)), // Round to 2 decimal places
+          category,
+          createdBy,
+          image: image || '', // Use provided image or empty string
+        };
+
+        processedProducts.push(productData);
+      } catch (error) {
+        errors.push({ index, message: error.message });
+      }
+    }
+
+    if (processedProducts.length === 0) {
+      return res
+        .status(400)
+        .json({ message: 'No valid products to import.', errors });
+    }
+
+    // Bulk insert valid products
+    const createdProducts = await Product.insertMany(processedProducts);
+
+    res.status(201).json({
+      message: `${createdProducts.length} products imported successfully.`,
+      createdProducts,
+      errors,
+    });
+  } catch (error) {
+    console.error('Error bulk creating products:', error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while importing products.' });
+  }
+};
+
+
 
 // Update a product
 exports.updateProduct = async (req, res) => {

@@ -8,7 +8,7 @@ const getCartByUserId = async (userId) => {
   const cartItems = await CartItem.find({ cartId: cart._id })
     .populate({
       path: 'productId',
-      select: '_id name price image category',
+      select: '_id name price sellingPrice image category',
       populate: {
         path: 'category',
         select: 'name address.name address.latitude address.longitude', // Include address details
@@ -18,8 +18,6 @@ const getCartByUserId = async (userId) => {
 
   return { ...cart.toObject(), cartItems };
 };
-
-
 
 const createCart = async (userId) => {
   const cart = new Cart({ userId, cartItems: [] }); // Add cartItems
@@ -45,9 +43,6 @@ const addCartItem = async (cartId, productId, quantity, menuOptions = []) => {
 
   return await cartItem.save();
 };
-
-
-
 
 const removeCartItem = async (cartId, productId) => {
   return await CartItem.deleteOne({ cartId, productId });

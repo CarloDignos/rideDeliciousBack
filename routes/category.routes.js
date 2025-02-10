@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   createCategory,
+  bulkCreateCategories,
   getCategories,
   uploadCategoryImage,
   deleteCategory,
@@ -17,6 +18,13 @@ router.post(
   uploadCategoryImage, // Add image upload middleware
   createCategory,
 );
+router.post(
+  '/bulk-import',
+  authenticateToken,
+  authorize('Admin'),
+  bulkCreateCategories,
+);
+
 router.get("/", authenticateToken, getCategories); // Authenticated users can view categories
 router.delete("/:id", authenticateToken, authorize("Admin"), deleteCategory); // Only admin can delete categories
 

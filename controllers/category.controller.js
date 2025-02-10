@@ -89,6 +89,43 @@ exports.createCategory = async (req, res) => {
   }
 };
 
+exports.bulkCreateCategories = async (req, res) => {
+  try {
+    const { categories } = req.body; // Extract categories array from request body
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return res.status(400).json({ message: 'Invalid categories data.' });
+    }
+
+    // Validate and prepare categories
+    const formattedCategories = categories.map((cat) => ({
+      name: cat.name,
+      description: cat.description || '',
+      address: {
+        street: cat.street || '',
+        city: cat.city || '',
+        state: cat.state || '',
+        zipCode: cat.zipCode || '',
+        latitude: parseFloat(cat.latitude) || null,
+        longitude: parseFloat(cat.longitude) || null,
+      },
+    }));
+
+    // Bulk insert categories
+    const createdCategories = await Category.insertMany(formattedCategories);
+
+    res.status(201).json({
+      message: 'Categories imported successfully',
+      categories: createdCategories,
+    });
+  } catch (error) {
+    console.error('Error bulk creating categories:', error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while importing categories.' });
+  }
+};
+
 // Helper function to extract address components by type
 function getAddressComponent(result, type) {
   const component = result.address_components.find((comp) =>

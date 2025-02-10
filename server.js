@@ -11,6 +11,7 @@ const orderRoutes = require("./routes/order.routes");
 const categoryRoutes = require("./routes/category.routes");
 const cors = require("cors");
 const app = express();
+const path = require('path');
 const server = http.createServer(app);
 const io = socketIo(server);
 const cartRoutes = require("./routes/cart.routes");
@@ -24,12 +25,13 @@ app.use("/uploads", express.static("uploads"));
 // Adjust CORS options
 const corsOptions = {
   origin: [
-    "https://api.ridedelicious.com", // Your production backend domain
-    "https://ridedelicious.com",        // Your production frontend domain
-    "http://localhost:8081",            // React Native Metro bundler (for development purposes)
+    'https://api.ridedelicious.com', // Your production backend domain
+    'https://ridedelicious.com', // Your production frontend domain
+    'http://localhost:8081',
+     'http://localhost:3000'           // React Native Metro bundler (for development purposes)
   ],
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-  allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
   credentials: true, // Allow cookies/credentials if necessary
 };
 
@@ -51,7 +53,7 @@ app.use(
 // Initialize Passport and use session
 app.use(passport.initialize());
 app.use(passport.session()); // This is what enables session-based authentication
-
+app.use(express.static(path.join(__dirname, 'views')));
 // Connect to MongoDB
 connectDB();
 
@@ -68,6 +70,9 @@ app.get("/", (req, res) => {
   res.send("Your are connected into backend.");
 });
 
+app.get('/privacy-policy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
+});
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
