@@ -1,5 +1,6 @@
 const menuOptionDAL = require('../DAL/menuOption.dal');
 const MenuOption = require('../models/menuOption.model'); // Adjust the path if needed
+const { ObjectId } = require('mongodb'); // Import ObjectId
 
 // Create a new menu option
 // Create a new menu option
@@ -91,8 +92,11 @@ exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Find all menu options for the given product ID
-    const menuOptions = await MenuOption.find({ product: productId });
+    // Convert productId to ObjectId
+    const objectIdProductId = ObjectId(productId);
+
+    // Find all menu options for the given ObjectId product ID
+    const menuOptions = await MenuOption.find({ product: objectIdProductId });
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
@@ -108,7 +112,6 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return groups;
     }, {});
 
-    // Convert grouped options to an array of objects
     const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
       groupName,
       options: groupedOptions[groupName],
