@@ -92,11 +92,9 @@ exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
-
-    // Log the productId type
     console.log('Type of productId:', typeof productId);
 
-    // Query with productId as a string
+    // Query the database with productId as a string
     const menuOptions = await MenuOption.find({ product: productId });
 
     console.log('Menu options found:', JSON.stringify(menuOptions, null, 2));
