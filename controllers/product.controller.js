@@ -199,10 +199,14 @@ exports.getProductsByCategory = async (req, res) => {
   try {
     let { category } = req.params;
 
-    // Trim whitespace (just in case)
+    console.log('req.params:', req.params); // Debugging log
+    if (!category) {
+      console.log('Category parameter is missing');
+      return res.status(400).json({ error: 'Category parameter is required' });
+    }
+
     category = category.trim();
 
-    // Validate and convert to ObjectId
     if (!mongoose.Types.ObjectId.isValid(category)) {
       console.log('Invalid Category ID:', category);
       return res.status(400).json({ error: 'Invalid category ID format' });
@@ -210,7 +214,6 @@ exports.getProductsByCategory = async (req, res) => {
 
     const categoryId = mongoose.Types.ObjectId(category);
 
-    // Fetch products
     const products = await Product.find({ category: categoryId })
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
@@ -229,6 +232,7 @@ exports.getProductsByCategory = async (req, res) => {
       .json({ error: 'An error occurred while fetching products' });
   }
 };
+
 
 exports.deleteProduct = async (req, res) => {
   try {
