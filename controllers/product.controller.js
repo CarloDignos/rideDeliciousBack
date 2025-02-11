@@ -197,7 +197,7 @@ exports.getProducts = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    let { categoryId } = req.params; // Ensure consistency with the route definition
+    let { categoryId } = req.params;
 
     console.log('req.params:', req.params); // Debugging log
     if (!categoryId) {
@@ -213,7 +213,7 @@ exports.getProductsByCategory = async (req, res) => {
     }
 
     const products = await Product.find({
-      category: mongoose.Types.ObjectId(categoryId),
+      category: new mongoose.Types.ObjectId(categoryId),
     })
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
