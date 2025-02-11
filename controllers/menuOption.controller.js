@@ -93,6 +93,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
 
+    // Query with productId as a string
     const menuOptions = await MenuOption.find({ product: productId });
 
     console.log('Menu options found:', JSON.stringify(menuOptions, null, 2));
@@ -119,7 +120,6 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       'Formatted menu options:',
       JSON.stringify(formattedOptions, null, 2),
     );
-
     res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
