@@ -205,9 +205,11 @@ exports.getProductsByCategory = async (req, res) => {
     }
 
     // Fetch products with the specified category ID
-    const products = await Product.find({ category })
-      .populate("category", "name address image")
-      .populate("createdBy", "username userType");
+    const products = await Product.find({
+      category: mongoose.Types.ObjectId(category),
+    })
+      .populate('category', 'name address image')
+      .populate('createdBy', 'username userType');
 
     if (products.length === 0) {
       return res.status(404).json({ message: "No products found for this category" });

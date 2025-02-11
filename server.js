@@ -73,10 +73,6 @@ app.get("/", (req, res) => {
 app.get('/privacy-policy', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
 });
-<<<<<<< HEAD
-
-=======
->>>>>>> 3a20394548d61e663d6c7896babe644a3cfd03bd
 
 app.get('/privacy-policy', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
