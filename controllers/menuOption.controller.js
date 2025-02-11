@@ -98,24 +98,20 @@ exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Validate and convert productId to ObjectId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ error: 'Invalid product ID format.' });
     }
 
-    // Query menu options and populate the 'product' field with name, price, description
     const menuOptions = await MenuOption.find({
       product: new mongoose.Types.ObjectId(productId),
-    }).populate('product', 'name sellingPrice description');
+    }).populate('product', 'name price markUp sellingPrice description');
 
-    // Check if menu options were found
     if (!menuOptions || menuOptions.length === 0) {
       return res
         .status(404)
         .json({ message: 'No menu options found for this product.' });
     }
 
-    // Group the options by groupName for better structure in the response
     const groupedOptions = menuOptions.reduce((groups, option) => {
       if (!groups[option.groupName]) {
         groups[option.groupName] = [];
@@ -124,13 +120,11 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return groups;
     }, {});
 
-    // Format the response
     const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
       groupName,
       options: groupedOptions[groupName],
     }));
 
-    // Return the formatted response
     res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
@@ -139,6 +133,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       .json({ error: 'An error occurred while fetching menu options.' });
   }
 };
+
 
 /**
  * Update a menu option by ID
