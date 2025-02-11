@@ -93,6 +93,9 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
 
+    // Log the productId type
+    console.log('Type of productId:', typeof productId);
+
     // Query with productId as a string
     const menuOptions = await MenuOption.find({ product: productId });
 
@@ -100,7 +103,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
-      return res.status(200).json([]); // Return an empty array if no options are found
+      return res.status(200).json([]);
     }
 
     const groupedOptions = menuOptions.reduce((groups, option) => {
@@ -126,11 +129,6 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-
-
 
 
 // Update a menu option
