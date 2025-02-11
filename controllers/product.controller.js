@@ -194,39 +194,44 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-// Get menu options for a specific product
-exports.getMenuOptionsByProduct = async (req, res) => {
+// Get products by category
+exports.getProductsByCategory = async (req, res) => {
   try {
-    const { productId } = req.params;
+    let { categoryId } = req.params;
 
-    const menuOptions = await MenuOption.find({ product: productId });
-
-    if (!menuOptions || menuOptions.length === 0) {
-      return res.status(200).json([]); // Return an empty array if no options
+    console.log('req.params:', req.params); // Debugging log
+    if (!categoryId) {
+      console.log('Category parameter is missing');
+      return res.status(400).json({ error: 'Category parameter is required' });
     }
 
-    // Group options by "groupName"
-    const groupedOptions = menuOptions.reduce((groups, option) => {
-      if (!groups[option.groupName]) {
-        groups[option.groupName] = [];
-      }
-      groups[option.groupName].push(option);
-      return groups;
-    }, {});
+    categoryId = categoryId.trim();
 
-    // Transform grouped options into an array format
-    const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
-      groupName,
-      options: groupedOptions[groupName],
-    }));
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      console.log('Invalid Category ID:', categoryId);
+      return res.status(400).json({ error: 'Invalid category ID format' });
+    }
 
-    res.status(200).json(formattedOptions);
-  } catch (error) {
-    console.error('Error fetching menu options:', error);
-    res.status(500).json({ error: error.message });
+    const products = await Product.find({
+      category: new mongoose.Types.ObjectId(categoryId),
+    })
+      .populate('category', 'name address image')
+      .populate('createdBy', 'username userType');
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'No products found for this category' });
+    }
+
+    res.status(200).json(products);
+  } catch (err) {
+    console.error('Error fetching products by category:', err);
+    res
+      .status(500)
+      .json({ error: 'An error occurred while fetching products' });
   }
 };
-
 
 
 exports.deleteProduct = async (req, res) => {
