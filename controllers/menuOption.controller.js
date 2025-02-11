@@ -93,10 +93,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     const { productId } = req.params;
 
     const menuOptions = await MenuOption.find({
-      $or: [
-        { product: productId }, // Match if stored as a string
-        { product: new ObjectId(productId) }, // Match if stored as ObjectId
-      ],
+        product: productId
     });
 
     if (!menuOptions || menuOptions.length === 0) {
