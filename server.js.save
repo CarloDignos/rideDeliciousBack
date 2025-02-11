@@ -28,7 +28,7 @@ const corsOptions = {
     'https://api.ridedelicious.com', // Your production backend domain
     'https://ridedelicious.com', // Your production frontend domain
     'http://localhost:8081',
-     'http://192.168.242.149:3000'           // React Native Metro bundler (for development purposes)
+     'http://:3000'           // React Native Metro bundler (for development purposes)
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
