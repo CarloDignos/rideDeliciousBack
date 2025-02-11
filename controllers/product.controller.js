@@ -197,16 +197,20 @@ exports.getProducts = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const { category } = req.params;
+    let { category } = req.params;
 
-    // Validate and convert category to ObjectId
+    // Trim whitespace (just in case)
+    category = category.trim();
+
+    // Validate and convert to ObjectId
     if (!mongoose.Types.ObjectId.isValid(category)) {
+      console.log('Invalid Category ID:', category);
       return res.status(400).json({ error: 'Invalid category ID format' });
     }
 
     const categoryId = mongoose.Types.ObjectId(category);
 
-    // Fetch products with the specified category ID
+    // Fetch products
     const products = await Product.find({ category: categoryId })
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
