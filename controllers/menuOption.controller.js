@@ -92,11 +92,10 @@ exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Query the database to match either ObjectId or string
     const menuOptions = await MenuOption.find({
       $or: [
-        { product: new ObjectId(productId) }, // For ObjectId match
-        { product: productId.toString() }, // For string match
+        { product: productId }, // Match if stored as a string
+        { product: new ObjectId(productId) }, // Match if stored as ObjectId
       ],
     });
 
@@ -105,7 +104,6 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return res.status(200).json([]); // Return an empty array if no options are found
     }
 
-    // Group options by "groupName"
     const groupedOptions = menuOptions.reduce((groups, option) => {
       if (!groups[option.groupName]) {
         groups[option.groupName] = [];
@@ -114,18 +112,18 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return groups;
     }, {});
 
-    // Convert grouped options to an array of objects
     const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
       groupName,
       options: groupedOptions[groupName],
     }));
 
-    res.status(200).json(formattedOptions); // Return the structured response
+    res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 
