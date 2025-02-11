@@ -197,21 +197,24 @@ exports.getProducts = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    let { category } = req.params;
+    let { categoryId } = req.params; // Ensure consistency with the route definition
 
-    // Trim whitespace (just in case)
-    category = category.trim();
+    console.log('req.params:', req.params); // Debugging log
+    if (!categoryId) {
+      console.log('Category parameter is missing');
+      return res.status(400).json({ error: 'Category parameter is required' });
+    }
 
-    // Validate and convert to ObjectId
-    if (!mongoose.Types.ObjectId.isValid(category)) {
-      console.log('Invalid Category ID:', category);
+    categoryId = categoryId.trim();
+
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      console.log('Invalid Category ID:', categoryId);
       return res.status(400).json({ error: 'Invalid category ID format' });
     }
 
-    const categoryId = mongoose.Types.ObjectId(category);
-
-    // Fetch products
-    const products = await Product.find({ category: categoryId })
+    const products = await Product.find({
+      category: mongoose.Types.ObjectId(categoryId),
+    })
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
 
@@ -229,6 +232,7 @@ exports.getProductsByCategory = async (req, res) => {
       .json({ error: 'An error occurred while fetching products' });
   }
 };
+
 
 exports.deleteProduct = async (req, res) => {
   try {
