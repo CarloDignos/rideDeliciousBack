@@ -1,23 +1,20 @@
 const menuOptionDAL = require('../DAL/menuOption.dal');
 const MenuOption = require('../models/menuOption.model'); // Adjust the path if needed
-const { ObjectId } = require('mongodb');
 
-// Create a new menu option
-// Create a new menu option
+/**
+ * Create a new menu option or multiple menu options
+ */
 exports.createMenuOption = async (req, res) => {
   try {
-    // Check if the request body is an array or a single object
-    const isArray = Array.isArray(req.body);
-
-    if (isArray) {
+    if (Array.isArray(req.body)) {
       // Handle multiple menu options
       const menuOptions = req.body.map((option) => ({
         product: option.product,
         groupName: option.groupName,
         optionName: option.optionName,
-        priceModifier: option.priceModifier,
-        isRequired: option.isRequired,
-        selectionType: option.selectionType,
+        priceModifier: parseFloat(option.priceModifier) || 0,
+        isRequired: option.isRequired === 'true' || option.isRequired === true,
+        selectionType: option.selectionType || 'single',
       }));
 
       const createdOptions = await MenuOption.insertMany(menuOptions);
@@ -40,9 +37,9 @@ exports.createMenuOption = async (req, res) => {
         product,
         groupName,
         optionName,
-        priceModifier,
-        isRequired,
-        selectionType,
+        priceModifier: parseFloat(priceModifier) || 0,
+        isRequired: isRequired === 'true' || isRequired === true,
+        selectionType: selectionType || 'single',
       });
 
       const createdOption = await menuOption.save();
@@ -52,10 +49,16 @@ exports.createMenuOption = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error creating menu option(s):', error);
+    res
+      .status(500)
+      .json({ error: 'An error occurred while creating menu options.' });
   }
 };
 
+/**
+ * Bulk create menu options
+ */
 exports.bulkCreateMenuOptions = async (req, res) => {
   try {
     const { menuOptions } = req.body;
@@ -69,7 +72,7 @@ exports.bulkCreateMenuOptions = async (req, res) => {
       groupName: option.groupName,
       optionName: option.optionName,
       priceModifier: parseFloat(option.priceModifier) || 0,
-      isRequired: option.isRequired === 'true',
+      isRequired: option.isRequired === 'true' || option.isRequired === true,
       selectionType: option.selectionType || 'single',
     }));
 
@@ -87,17 +90,15 @@ exports.bulkCreateMenuOptions = async (req, res) => {
   }
 };
 
-
+/**
+ * Get menu options by product ID
+ */
 exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
-    console.log('Type of productId:', typeof productId);
 
-    // Query the database with productId as a string
     const menuOptions = await MenuOption.find({ product: productId });
-
-    console.log('Menu options found:', JSON.stringify(menuOptions, null, 2));
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
@@ -117,19 +118,18 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       options: groupedOptions[groupName],
     }));
 
-    console.log(
-      'Formatted menu options:',
-      JSON.stringify(formattedOptions, null, 2),
-    );
     res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ error: 'An error occurred while fetching menu options.' });
   }
 };
 
-
-// Update a menu option
+/**
+ * Update a menu option by ID
+ */
 exports.updateMenuOption = async (req, res) => {
   try {
     const { id } = req.params;
@@ -145,11 +145,16 @@ exports.updateMenuOption = async (req, res) => {
       .status(200)
       .json({ message: 'Menu option updated successfully', menuOption });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error updating menu option:', error);
+    res
+      .status(500)
+      .json({ error: 'An error occurred while updating the menu option.' });
   }
 };
 
-// Delete a menu option
+/**
+ * Delete a menu option by ID
+ */
 exports.deleteMenuOption = async (req, res) => {
   try {
     const { id } = req.params;
@@ -162,6 +167,9 @@ exports.deleteMenuOption = async (req, res) => {
 
     res.status(200).json({ message: 'Menu option deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error deleting menu option:', error);
+    res
+      .status(500)
+      .json({ error: 'An error occurred while deleting the menu option.' });
   }
 };
