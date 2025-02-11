@@ -1,6 +1,6 @@
-const mongoose = require("mongoose"); // Add this line if it's missing
-const Product = require("../models/product.model");
-const productDAL = require("../DAL/product.dal");
+const mongoose = require('mongoose'); // Add this line if it's missing
+const Product = require('../models/product.model');
+const productDAL = require('../DAL/product.dal');
 
 // Create a new product with category, markup, and selling price
 exports.createProduct = async (req, res) => {
@@ -148,8 +148,6 @@ exports.bulkCreateProducts = async (req, res) => {
   }
 };
 
-
-
 // Update a product
 exports.updateProduct = async (req, res) => {
   const { id: productId } = req.params;
@@ -157,8 +155,14 @@ exports.updateProduct = async (req, res) => {
   const userId = req.user.id; // Assuming `req.user` contains authenticated user info
 
   try {
-    const updatedProduct = await productDAL.updateProduct(productId, updateData, userId);
-    res.status(200).json({ message: "Product updated successfully", updatedProduct });
+    const updatedProduct = await productDAL.updateProduct(
+      productId,
+      updateData,
+      userId,
+    );
+    res
+      .status(200)
+      .json({ message: 'Product updated successfully', updatedProduct });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -170,7 +174,7 @@ exports.getProductDetails = async (req, res) => {
 
   try {
     const product = await productDAL.getProductDetails(productId);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ message: 'Product not found' });
 
     res.status(200).json(product);
   } catch (err) {
@@ -183,10 +187,10 @@ exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find()
       .populate({
-        path: "category",
-        select: "name address image",
+        path: 'category',
+        select: 'name address image',
       }) // Include the `address` and `name` fields explicitly in the category
-      .populate("createdBy", "_id username userType"); // Populate `createdBy` details
+      .populate('createdBy', '_id username userType'); // Populate `createdBy` details
 
     res.status(200).json(products);
   } catch (err) {
@@ -207,14 +211,7 @@ exports.getProductsByCategory = async (req, res) => {
 
     categoryId = categoryId.trim();
 
-    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-      console.log('Invalid Category ID:', categoryId);
-      return res.status(400).json({ error: 'Invalid category ID format' });
-    }
-
-    const products = await Product.find({
-      category: new mongoose.Types.ObjectId(categoryId),
-    })
+    const products = await Product.find({ category: categoryId })
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
 
@@ -232,7 +229,6 @@ exports.getProductsByCategory = async (req, res) => {
       .json({ error: 'An error occurred while fetching products' });
   }
 };
-
 
 exports.deleteProduct = async (req, res) => {
   try {
