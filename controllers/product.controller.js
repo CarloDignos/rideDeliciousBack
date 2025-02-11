@@ -197,13 +197,9 @@ exports.getProducts = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    // Change this: const { categoryId } = req.params;
-    const { category } = req.params;
-
-    // Query using the correct value
-    const products = await Product.find({ category: category });
-
-    if (products.length === 0) {
+    const { categoryId } = req.params;
+    const products = await Product.find({ category: String(categoryId) });
+    if (!products || products.length === 0) {
       return res
         .status(404)
         .json({ message: 'No products found for this category' });
@@ -213,7 +209,6 @@ exports.getProductsByCategory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 
 exports.deleteProduct = async (req, res) => {
