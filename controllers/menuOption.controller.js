@@ -86,17 +86,22 @@ exports.bulkCreateMenuOptions = async (req, res) => {
   }
 };
 
-// Get menu options for a specific product
+
 exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Find all menu options for the given product ID
-    const menuOptions = await MenuOption.find({ product: productId });
+    // Query the database to match either ObjectId or string
+    const menuOptions = await MenuOption.find({
+      $or: [
+        { product: new ObjectId(productId) }, // For ObjectId match
+        { product: productId.toString() }, // For string match
+      ],
+    });
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
-      return res.status(200).json([]);
+      return res.status(200).json([]); // Return an empty array if no options are found
     }
 
     // Group options by "groupName"
@@ -114,12 +119,14 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       options: groupedOptions[groupName],
     }));
 
-    res.status(200).json(formattedOptions);
+    res.status(200).json(formattedOptions); // Return the structured response
   } catch (error) {
     console.error('Error fetching menu options:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 
 
