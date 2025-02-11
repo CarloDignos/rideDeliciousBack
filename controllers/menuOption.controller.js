@@ -1,5 +1,6 @@
 const menuOptionDAL = require('../DAL/menuOption.dal');
 const MenuOption = require('../models/menuOption.model'); // Adjust the path if needed
+const mongoose = require('mongoose');
 
 /**
  * Create a new menu option or multiple menu options
@@ -98,7 +99,11 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
 
-    const menuOptions = await MenuOption.find({ product: productId });
+    const query = mongoose.Types.ObjectId.isValid(productId)
+      ? { product: mongoose.Types.ObjectId(productId) }
+      : { product: productId };
+
+    const menuOptions = await MenuOption.find(query);
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
