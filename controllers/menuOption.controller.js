@@ -99,9 +99,12 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
 
-    const query = mongoose.Types.ObjectId.isValid(productId)
-      ? { product: mongoose.Types.ObjectId(productId) }
-      : { product: productId };
+    let query;
+    if (mongoose.Types.ObjectId.isValid(productId)) {
+      query = { product: new mongoose.Types.ObjectId(productId) };
+    } else {
+      query = { product: productId }; // If it's not a valid ObjectId, treat it as a string.
+    }
 
     const menuOptions = await MenuOption.find(query);
 
