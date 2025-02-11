@@ -87,15 +87,16 @@ exports.bulkCreateMenuOptions = async (req, res) => {
 };
 
 // Get menu options for a specific product
-// Get menu options for a specific product
 exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
+    // Find all menu options for the given product ID
     const menuOptions = await MenuOption.find({ product: productId });
 
     if (!menuOptions || menuOptions.length === 0) {
-      return res.status(200).json([]); // Return an empty array if no options
+      console.log('No menu options found for product:', productId);
+      return res.status(200).json([]);
     }
 
     // Group options by "groupName"
@@ -107,7 +108,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return groups;
     }, {});
 
-    // Transform grouped options into an array format
+    // Convert grouped options to an array of objects
     const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
       groupName,
       options: groupedOptions[groupName],
