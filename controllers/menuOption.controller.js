@@ -1,6 +1,5 @@
 const menuOptionDAL = require('../DAL/menuOption.dal');
 const MenuOption = require('../models/menuOption.model'); // Adjust the path if needed
-const { ObjectId } = require('mongodb'); // Import ObjectId
 
 // Create a new menu option
 // Create a new menu option
@@ -87,25 +86,20 @@ exports.bulkCreateMenuOptions = async (req, res) => {
   }
 };
 
+// Get menu options for a specific product
 exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Validate productId and convert it to ObjectId
-    if (!ObjectId.isValid(productId)) {
-      return res.status(400).json({ error: 'Invalid product ID format' });
-    }
-
-    const menuOptions = await MenuOption.find({
-      product: new ObjectId(productId),
-    });
+    // Find all menu options for the given product ID
+    const menuOptions = await MenuOption.find({ product: productId });
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
       return res.status(200).json([]);
     }
 
-    // Group the menu options by groupName
+    // Group options by "groupName"
     const groupedOptions = menuOptions.reduce((groups, option) => {
       if (!groups[option.groupName]) {
         groups[option.groupName] = [];
@@ -114,7 +108,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return groups;
     }, {});
 
-    // Convert grouped options into a format for the frontend
+    // Convert grouped options to an array of objects
     const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
       groupName,
       options: groupedOptions[groupName],
@@ -123,10 +117,9 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: error.message });
   }
 };
-
 
 
 
