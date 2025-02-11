@@ -91,11 +91,14 @@ exports.bulkCreateMenuOptions = async (req, res) => {
 exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
-
+    console.log('Request received ' + productId);
     const menuOptions = await MenuOption.find({
-        product: productId
+      $or: [
+        { product: productId }, // Match if stored as a string
+        { product: new ObjectId(productId) }, // Match if stored as ObjectId
+      ],
     });
-
+    console.log('Request received menu options' + menuOptions);
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
       return res.status(200).json([]); // Return an empty array if no options are found
