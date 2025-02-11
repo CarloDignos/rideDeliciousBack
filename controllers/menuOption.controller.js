@@ -91,14 +91,12 @@ exports.bulkCreateMenuOptions = async (req, res) => {
 exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
-    console.log('Request received ' + productId);
-    const menuOptions = await MenuOption.find({
-      $or: [
-        { product: productId }, // Match if stored as a string
-        { product: new ObjectId(productId) }, // Match if stored as ObjectId
-      ],
-    });
-    console.log('Request received menu options' + menuOptions);
+    console.log('Request received for productId:', productId);
+
+    const menuOptions = await MenuOption.find({ product: productId });
+
+    console.log('Menu options found:', JSON.stringify(menuOptions, null, 2));
+
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
       return res.status(200).json([]); // Return an empty array if no options are found
@@ -117,12 +115,18 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       options: groupedOptions[groupName],
     }));
 
+    console.log(
+      'Formatted menu options:',
+      JSON.stringify(formattedOptions, null, 2),
+    );
+
     res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 
