@@ -37,7 +37,7 @@ router.post(
   bulkCreateProducts,
 );
 router.get("/", authenticateToken, getProducts); // Authenticated users can view products
-router.get("/category/:category", authenticateToken, getProductsByCategory); // Authenticated users can view products by category
+router.get('/category/:categoryId', authenticateToken, getProductsByCategory);
 router.put("/:id", authenticateToken, authorize("Admin"), updateProduct); // Only admin can update products
 router.get("/:id", authenticateToken, getProductDetails); // Authenticated users can view product details
 router.delete("/:id", authenticateToken, authorize("Admin"), deleteProduct); // Only admin can delete products

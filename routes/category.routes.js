@@ -27,7 +27,6 @@ router.post(
 );
 
 router.get("/", authenticateToken, getCategories); // Authenticated users can view categories
-router.get('/:categoryId', authenticateToken, getProductsByCategory);
 router.delete("/:id", authenticateToken, authorize("Admin"), deleteCategory); // Only admin can delete categories
 
 

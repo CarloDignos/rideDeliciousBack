@@ -145,20 +145,6 @@ exports.getCategories = async (req, res) => {
   }
 };
 
-exports.getProductsByCategory = async (req, res) => {
-  try {
-    // Expecting categoryId as a URL parameter, e.g. /api/products/category/67aadfb10db614940c44799b
-    const { categoryId } = req.params;
-
-    // If your products store the category as an ObjectId, ensure you convert the string if needed.
-    // For example, with Mongoose you can simply query with the string.
-    const products = await Product.find({ category: categoryId });
-
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Delete a category and its associated products
 exports.deleteCategory = async (req, res) => {
