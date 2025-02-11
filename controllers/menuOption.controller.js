@@ -92,18 +92,13 @@ exports.getMenuOptionsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Convert productId to ObjectId
-    const objectIdProductId = ObjectId(productId);
-
-    // Find all menu options for the given ObjectId product ID
-    const menuOptions = await MenuOption.find({ product: objectIdProductId });
+    const menuOptions = await MenuOption.find({ product: ObjectId(productId) });
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
       return res.status(200).json([]);
     }
 
-    // Group options by "groupName"
     const groupedOptions = menuOptions.reduce((groups, option) => {
       if (!groups[option.groupName]) {
         groups[option.groupName] = [];
