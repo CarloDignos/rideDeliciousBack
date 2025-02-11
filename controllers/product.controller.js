@@ -197,30 +197,23 @@ exports.getProducts = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
+    // Change this: const { categoryId } = req.params;
     const { category } = req.params;
 
-    // Validate category ID
-    if (!mongoose.Types.ObjectId.isValid(category)) {
-      return res.status(400).json({ error: "Invalid category ID format" });
-    }
-
-    // Fetch products with the specified category ID
-    const products = await Product.find({
-      category: mongoose.Types.ObjectId(category),
-    })
-      .populate('category', 'name address image')
-      .populate('createdBy', 'username userType');
+    // Query using the correct value
+    const products = await Product.find({ category: category });
 
     if (products.length === 0) {
-      return res.status(404).json({ message: "No products found for this category" });
+      return res
+        .status(404)
+        .json({ message: 'No products found for this category' });
     }
-
     res.status(200).json(products);
-  } catch (err) {
-    console.error("Error fetching products by category:", err);
-    res.status(500).json({ error: "An error occurred while fetching products" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
+
 
 
 exports.deleteProduct = async (req, res) => {
