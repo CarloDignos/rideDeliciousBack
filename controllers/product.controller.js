@@ -211,7 +211,9 @@ exports.getProductsByCategory = async (req, res) => {
 
     categoryId = categoryId.trim();
 
-    const products = await Product.find({ category: categoryId })
+const products = await Product.find({
+  category: new mongoose.Types.ObjectId(categoryId),
+})
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
 
