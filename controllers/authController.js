@@ -460,7 +460,6 @@ const updateUserInformation = async (req, res) => {
     const { userId, updateData } = req.body;
     const loggedInUser = req.user;
 
-<<<<<<< HEAD
     if (!loggedInUser || !loggedInUser.id) {
       return res
         .status(401)
@@ -487,9 +486,9 @@ const updateUserInformation = async (req, res) => {
     }
 
     // Check permissions (if admin or updating own account)
-=======
+
     // Validate logged-in user
->>>>>>> fb1eb061277ed78ebed15939dcbde10bf508ac50
+
     if (
       loggedInUser.userType === 'Admin' ||
       loggedInUser.id.toString() === userId

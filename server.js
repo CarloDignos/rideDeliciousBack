@@ -16,7 +16,6 @@ const server = http.createServer(app);
 const io = socketIo(server);
 const cartRoutes = require("./routes/cart.routes");
 const menuOptionRoutes = require("./routes/menuOption.routes");
-const path = require('path');
 const paymentMethodRoutes = require("./routes/paymentMethod.routes");
 
 // Middleware to parse JSON
@@ -71,17 +70,16 @@ app.get("/", (req, res) => {
   res.send("Your are connected into backend.");
 });
 
-<<<<<<< HEAD
-app.get('/privacy-policy', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
-});
-=======
 
 app.get('/privacy-policy', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
 });
 
->>>>>>> fb1eb061277ed78ebed15939dcbde10bf508ac50
+app.get('/privacy-policy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
+});
+
+
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
