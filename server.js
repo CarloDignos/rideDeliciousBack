@@ -10,6 +10,7 @@ const productRoutes = require("./routes/product.routes");
 const orderRoutes = require("./routes/order.routes");
 const categoryRoutes = require("./routes/category.routes");
 const cors = require("cors");
+const path = require("path");
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -73,10 +74,7 @@ app.get("/", (req, res) => {
 app.get('/privacy-policy', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
 });
-<<<<<<< HEAD
 
-=======
->>>>>>> 3a20394548d61e663d6c7896babe644a3cfd03bd
 
 app.get('/privacy-policy', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
@@ -122,3 +120,4 @@ const PORT = process.env.PORT || 6001;
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
+

@@ -460,10 +460,6 @@ const updateUserInformation = async (req, res) => {
     const { userId, updateData } = req.body;
     const loggedInUser = req.user;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 3a20394548d61e663d6c7896babe644a3cfd03bd
     if (!loggedInUser || !loggedInUser.id) {
       return res
         .status(401)
