@@ -197,24 +197,24 @@ exports.getProducts = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    let { category } = req.params;
+    let { categoryId } = req.params; // Ensure consistency with the route definition
 
     console.log('req.params:', req.params); // Debugging log
-    if (!category) {
+    if (!categoryId) {
       console.log('Category parameter is missing');
       return res.status(400).json({ error: 'Category parameter is required' });
     }
 
-    category = category.trim();
+    categoryId = categoryId.trim();
 
-    if (!mongoose.Types.ObjectId.isValid(category)) {
-      console.log('Invalid Category ID:', category);
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      console.log('Invalid Category ID:', categoryId);
       return res.status(400).json({ error: 'Invalid category ID format' });
     }
 
-    const categoryId = mongoose.Types.ObjectId(category);
-
-    const products = await Product.find({ category: categoryId })
+    const products = await Product.find({
+      category: mongoose.Types.ObjectId(categoryId),
+    })
       .populate('category', 'name address image')
       .populate('createdBy', 'username userType');
 
