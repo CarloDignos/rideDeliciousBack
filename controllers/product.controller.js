@@ -216,10 +216,7 @@ exports.getProductsByCategory = async (req, res) => {
       category: new mongoose.Types.ObjectId(categoryId),
     })
       .populate('category', 'name address image')
-      .populate('createdBy', 'username userType')
-      .select(
-        'name description price markUp sellingPrice category image createdBy',
-      );
+      .populate('createdBy', 'username userType');
 
     if (products.length === 0) {
       return res
@@ -235,7 +232,6 @@ exports.getProductsByCategory = async (req, res) => {
       .json({ error: 'An error occurred while fetching products' });
   }
 };
-
 
 
 exports.deleteProduct = async (req, res) => {
