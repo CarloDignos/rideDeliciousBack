@@ -3,11 +3,12 @@ const {
   createCategory,
   bulkCreateCategories,
   getCategories,
+  getProductsByCategory,
   uploadCategoryImage,
   deleteCategory,
 } = require('../controllers/category.controller');
 const { authenticateToken, authorize } = require("../middlewares/authMiddleware");
-console.log({ createCategory, getCategories }); // Check if functions are defined
+console.log({ createCategory, getCategories, getProductsByCategory }); // Check if functions are defined
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.post(
 );
 
 router.get("/", authenticateToken, getCategories); // Authenticated users can view categories
+router.get('/:categoryId', authenticateToken, getProductsByCategory);
 router.delete("/:id", authenticateToken, authorize("Admin"), deleteCategory); // Only admin can delete categories
 
 
