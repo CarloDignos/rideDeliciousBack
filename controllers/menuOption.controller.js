@@ -106,7 +106,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     // Query menu options and populate the 'product' field with name, price, description
     const menuOptions = await MenuOption.find({
       product: new mongoose.Types.ObjectId(productId),
-    }).populate('product', 'name price description');
+    }).populate('product', 'name sellingPrice description');
 
     // Check if menu options were found
     if (!menuOptions || menuOptions.length === 0) {
