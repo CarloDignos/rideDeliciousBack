@@ -99,20 +99,15 @@ exports.getMenuOptionsByProduct = async (req, res) => {
     const { productId } = req.params;
     console.log('Request received for productId:', productId);
 
-    let query;
-    if (mongoose.Types.ObjectId.isValid(productId)) {
-      query = { product: new mongoose.Types.ObjectId(productId) };
-    } else {
-      query = { product: productId }; // If it's not a valid ObjectId, treat it as a string.
-    }
-
-    const menuOptions = await MenuOption.find(query);
+    // Query directly with the productId as a string
+    const menuOptions = await MenuOption.find({ product: productId });
 
     if (!menuOptions || menuOptions.length === 0) {
       console.log('No menu options found for product:', productId);
       return res.status(200).json([]);
     }
 
+    // Group options by groupName
     const groupedOptions = menuOptions.reduce((groups, option) => {
       if (!groups[option.groupName]) {
         groups[option.groupName] = [];
@@ -121,11 +116,16 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return groups;
     }, {});
 
+    // Format the grouped options
     const formattedOptions = Object.keys(groupedOptions).map((groupName) => ({
       groupName,
       options: groupedOptions[groupName],
     }));
 
+    console.log(
+      'Formatted menu options:',
+      JSON.stringify(formattedOptions, null, 2),
+    );
     res.status(200).json(formattedOptions);
   } catch (error) {
     console.error('Error fetching menu options:', error);
@@ -134,6 +134,7 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       .json({ error: 'An error occurred while fetching menu options.' });
   }
 };
+
 
 /**
  * Update a menu option by ID
