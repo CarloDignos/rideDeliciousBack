@@ -102,9 +102,12 @@ exports.getMenuOptionsByProduct = async (req, res) => {
       return res.status(400).json({ error: 'Invalid product ID format.' });
     }
 
-    const menuOptions = await MenuOption.find({
-      product: new mongoose.Types.ObjectId(productId),
-    }).populate('product', 'name price markUp sellingPrice description');
+const menuOptions = await MenuOption.find({
+  product: new mongoose.Types.ObjectId(productId),
+}).populate({
+  path: 'product',
+  select: 'name price markUp sellingPrice description',
+});
 
     if (!menuOptions || menuOptions.length === 0) {
       return res
