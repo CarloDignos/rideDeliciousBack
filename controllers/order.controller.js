@@ -155,11 +155,14 @@ exports.createOrder = async (req, res) => {
       return res.status(404).json({ message: 'Customer address not found' });
     }
 
-    const { latitude: storeLat, longitude: storeLng } = storeDetails.address;
-    const { latitude: customerLat, longitude: customerLng } =
+// If storeDetails is a Mongoose document, convert it first:
+const plainStoreDetails = storeDetails.toObject ? storeDetails.toObject() : storeDetails;
+const { latitude: storeLat, longitude: storeLng } = plainStoreDetails;
+
+console.log('Store Coordinates:', storeLat, storeLng);   
+const { latitude: customerLat, longitude: customerLng } =
       customerDetails.address;
 
-    console.log('Store Coordinates:', storeLat, storeLng);
     console.log('Customer Coordinates:', customerLat, customerLng);
 
     // Calculate distance and estimated time using Google Maps API

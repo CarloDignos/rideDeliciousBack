@@ -11,7 +11,7 @@ const getCartByUserId = async (userId) => {
       select: '_id name price sellingPrice image category',
       populate: {
         path: 'category',
-        select: 'name address.name address.latitude address.longitude', // Include address details
+        select: 'name latitude longitude', // Include address details
       },
     })
     .populate('menuOptions', 'optionName priceModifier'); // Include menu options
