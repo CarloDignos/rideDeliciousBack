@@ -51,7 +51,7 @@ exports.getPendingOrders = async (req, res) => {
       'deliveryDetails.status': 'pending',
     })
       .populate('customer', 'username')
-      .populate('store', 'name latitude longitude')
+      .populate('store', 'name city latitude longitude')
       .populate('paymentMethod', 'type')
       .populate('products.product', 'name image price')
       .populate('products.menuOptions', 'optionName priceModifier');
