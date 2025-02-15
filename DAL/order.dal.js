@@ -10,7 +10,7 @@ exports.createOrder = async (orderData) => {
 exports.getPendingOrders = async () => {
   return await Order.find({ 'deliveryDetails.status': 'pending' })
     .populate('customer', 'username')
-    .populate('store', 'name')
+    .populate('store', 'name latitude longitude')
     .populate('products.product', 'name image price')
     .populate('products.menuOptions', 'optionName priceModifier');
 };
