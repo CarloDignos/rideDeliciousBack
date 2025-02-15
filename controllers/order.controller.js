@@ -51,7 +51,7 @@ exports.getPendingOrders = async (req, res) => {
       'deliveryDetails.status': 'pending',
     })
       .populate('customer', 'username')
-      .populate('store', 'name address')
+      .populate('store', 'name latitude longitude')
       .populate('paymentMethod', 'type')
       .populate('products.product', 'name image price')
       .populate('products.menuOptions', 'optionName priceModifier');
@@ -155,7 +155,9 @@ exports.createOrder = async (req, res) => {
       return res.status(404).json({ message: 'Customer address not found' });
     }
 
-    const { latitude: storeLat, longitude: storeLng } = storeDetails.address;
+    console.log('Store details:', storeDetails);
+
+    const { latitude: storeLat, longitude: storeLng } = storeDetails;
     const { latitude: customerLat, longitude: customerLng } =
       customerDetails.address;
 
