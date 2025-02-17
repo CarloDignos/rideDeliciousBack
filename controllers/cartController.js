@@ -30,21 +30,31 @@ const addItemToCart = async (req, res) => {
       cart = await cartDal.createCart(userId);
     }
 
-    // If the cart already contains items, enforce the same store rule.
+    // If there are already items in the cart, enforce the same "store" rule using the category.
     if (cart.cartItems && cart.cartItems.length > 0) {
-      // Retrieve the store of the existing items (assuming products are populated)
-      const existingStore = cart.cartItems[0].productId.store;
+      // Get the category from the first product in the cart.
+      // If the category was populated, it might be an object; otherwise, it might be just an ObjectId.
+      let existingCategory;
+      if (
+        cart.cartItems[0].productId.category &&
+        cart.cartItems[0].productId.category._id
+      ) {
+        existingCategory = cart.cartItems[0].productId.category._id;
+      } else {
+        existingCategory = cart.cartItems[0].productId.category;
+      }
 
-      // Fetch the new product's store information
+      // Fetch the new product's category (which serves as the store)
       const newProduct = await Product.findById(productId).select('category');
       if (!newProduct) {
         return res.status(404).json({ message: 'Product not found.' });
       }
 
-      // Compare the store IDs (make sure to convert them to strings if needed)
-      if (existingStore.toString() !== newProduct.store.toString()) {
+      // Compare the category IDs (converted to string)
+      if (existingCategory.toString() !== newProduct.category.toString()) {
         return res.status(400).json({
-          message: 'You can only add products from the same store to the cart.',
+          message:
+            'You can only add products from the same store (category) to the cart.',
         });
       }
     }
@@ -64,6 +74,7 @@ const addItemToCart = async (req, res) => {
     });
   }
 };
+
 
 const removeItemFromCart = async (req, res) => {
   try {
@@ -96,6 +107,8 @@ const removeItemFromCart = async (req, res) => {
     });
   }
 };
+
+
 
 const clearCart = async (req, res) => {
   try {
