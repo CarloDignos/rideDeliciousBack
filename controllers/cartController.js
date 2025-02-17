@@ -36,7 +36,7 @@ const addItemToCart = async (req, res) => {
       const existingStore = cart.cartItems[0].productId.store;
 
       // Fetch the new product's store information
-      const newProduct = await Product.findById(productId).select('store');
+      const newProduct = await Product.findById(productId).select('category');
       if (!newProduct) {
         return res.status(404).json({ message: 'Product not found.' });
       }
@@ -64,7 +64,6 @@ const addItemToCart = async (req, res) => {
     });
   }
 };
-
 
 const removeItemFromCart = async (req, res) => {
   try {
@@ -97,8 +96,6 @@ const removeItemFromCart = async (req, res) => {
     });
   }
 };
-
-
 
 const clearCart = async (req, res) => {
   try {
