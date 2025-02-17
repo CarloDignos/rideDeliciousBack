@@ -1,6 +1,7 @@
 const cartDal = require('../DAL/cartDal');
 const CartItem = require('../models/cartItem.model');
 const Cart = require('../models/cart.model');
+const Product = require('../models/product.model');
 
 const getCart = async (req, res) => {
   try {
@@ -29,6 +30,26 @@ const addItemToCart = async (req, res) => {
       cart = await cartDal.createCart(userId);
     }
 
+    // If the cart already contains items, enforce the same store rule.
+    if (cart.cartItems && cart.cartItems.length > 0) {
+      // Retrieve the store of the existing items (assuming products are populated)
+      const existingStore = cart.cartItems[0].productId.store;
+
+      // Fetch the new product's store information
+      const newProduct = await Product.findById(productId).select('store');
+      if (!newProduct) {
+        return res.status(404).json({ message: 'Product not found.' });
+      }
+
+      // Compare the store IDs (make sure to convert them to strings if needed)
+      if (existingStore.toString() !== newProduct.store.toString()) {
+        return res.status(400).json({
+          message: 'You can only add products from the same store to the cart.',
+        });
+      }
+    }
+
+    // If the check passes, add the item
     const cartItem = await cartDal.addCartItem(
       cart._id,
       productId,

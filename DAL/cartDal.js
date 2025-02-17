@@ -5,16 +5,17 @@ const getCartByUserId = async (userId) => {
   const cart = await Cart.findOne({ userId });
   if (!cart) return null;
 
-  const cartItems = await CartItem.find({ cartId: cart._id })
-    .populate({
-      path: 'productId',
-      select: '_id name price sellingPrice image category',
-      populate: {
-        path: 'category',
-        select: 'name latitude longitude', // Include address details
-      },
-    })
-    .populate('menuOptions', 'optionName priceModifier'); // Include menu options
+    const cartItems = await CartItem.find({ cartId: cart._id })
+      .populate({
+        path: 'productId',
+        select: '_id name price sellingPrice image category store', // include store
+        populate: {
+          path: 'category',
+          select: 'name latitude longitude',
+        },
+      })
+      .populate('menuOptions', 'optionName priceModifier');
+
 
   return { ...cart.toObject(), cartItems };
 };
