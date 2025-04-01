@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login & Account Deletion</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    form {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="email">Email:</label>
+      <input type="email" id="email" required />
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required />
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div id="accountActions" class="hidden">
+      <h2>Account Actions</h2>
+      <button id="deleteAccountBtn">Delete Account</button>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    let authToken = '';
+    let userId = '';
+
+    // Handle login form submission
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const messageDiv = document.getElementById('message');
+
+      try {
+        const response = await fetch('https://api.ridedelicious.com/api/v1/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          messageDiv.textContent = data.message || 'Login failed.';
+          return;
+        }
+
+        // Save token and user ID returned from the server
+        authToken = data.token;
+        userId = data.user.id;
+        messageDiv.textContent = 'Login successful.';
+        // Hide the login form and display account actions
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('accountActions').classList.remove('hidden');
+      } catch (error) {
+        messageDiv.textContent = 'Error: ' + error.message;
+      }
+    });
+
+    // Handle account deletion
+    document.getElementById('deleteAccountBtn').addEventListener('click', async function () {
+      if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+        return;
+      }
+
+      const messageDiv = document.getElementById('message');
+
+      try {
+        const response = await fetch(`https://api.ridedelicious.com//api/v1/delete/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          }
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          messageDiv.textContent = data.message || 'Account deletion failed.';
+          return;
+        }
+
+        messageDiv.textContent = 'Account deleted successfully.';
+        // Optionally, you might redirect the user or update the UI further here.
+      } catch (error) {
+        messageDiv.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+</body>
+
+</html>

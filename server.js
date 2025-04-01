@@ -79,6 +79,11 @@ app.get('/privacy-policy', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy-policy.html'));
 });
 
+// Add this route to serve the login-delete view
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'login-delete.html'));
+});
+
 
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
