@@ -9,14 +9,15 @@
   <style>
     :root {
       --primary-color: #fff700;
-      --primary-hover: #fff700;
+      --primary-hover: #e6de00;
       --secondary-color: #f8f9fa;
-      --accent-color: #333333;
+      --accent-color: #000;
       --text-color: #333;
       --light-text: #6c757d;
       --border-color: #e1e4e8;
       --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       --transition: all 0.3s ease;
+      --bg-color: #f5f7fa;
     }
 
     * {
@@ -27,7 +28,7 @@
 
     body {
       font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background-color: #f5f7fa;
+      background-color: var(--bg-color);
       color: var(--text-color);
       line-height: 1.6;
       display: flex;
@@ -49,21 +50,23 @@
 
     .header {
       background-color: var(--primary-color);
-      color: #000;
+      color: var(--accent-color);
       padding: 24px 30px;
       text-align: center;
       border-radius: 12px 12px 0 0;
     }
 
     .header h2 {
-      font-weight: 500;
+      font-weight: 600;
       font-size: 24px;
       margin-bottom: 8px;
+      color: #000;
     }
 
     .header p {
       opacity: 0.9;
       font-size: 14px;
+      color: #000;
     }
 
     .form-container {
@@ -108,7 +111,7 @@
     .form-control:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(255, 72, 0, 0.1);
+      box-shadow: 0 0 0 3px rgba(255, 247, 0, 0.2);
     }
 
     .btn {
@@ -145,8 +148,8 @@
     }
 
     .btn-danger:hover {
-      background-color: #222222;
-      border-color: #222222;
+      background-color: #333;
+      border-color: #333;
     }
 
     .hidden {
@@ -163,9 +166,9 @@
     }
 
     .alert-success {
-      background-color: #ffe8de;
-      color: #fff700;
-      border: 1px solid #ffcfbf;
+      background-color: #fffde6;
+      color: #000;
+      border: 1px solid #fff700;
     }
 
     .alert-danger {
@@ -236,8 +239,8 @@
   <div class="container">
     <div class="header">
       <div style="text-align: center; margin-bottom: 15px;">
-        <img src="https://ridedelicious.com/static/media/icon.4dbed73f52ea1d322d4b.png"
-          alt="Ride Delicious Logo" height="50">
+        <img src="https://ridedelicious.com/static/media/icon.4dbed73f52ea1d322d4b.png" alt="Ride Delicious Logo"
+          height="50">
       </div>
       <h2>Welcome Back</h2>
       <p>Sign in to manage your account</p>
